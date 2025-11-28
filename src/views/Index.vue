@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <h1 class="mt-4">Aktiv Testlar</h1>
-    <div style="width: 300px;">
+    <div style="width: 300px">
       <router-link to="/test">
         <testCard />
       </router-link>
@@ -13,12 +13,10 @@
 import testCard from "@/components/test-card.vue";
 
 export default {
-  components:{
-    testCard, 
-  }
+  components: {
+    testCard,
+  },
 };
 </script>
 
-<style scoped>
-  
-</style>
+<style scoped></style>

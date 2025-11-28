@@ -2,26 +2,25 @@
   <div class="login">
     <div class="">
       <div class="login_in d-flex flex-column text-center mt-5">
-        <h1 class="title">Termiz davlat muhandistlik va agrotexnologiyalar universiteti</h1>
+        <h1 class="title">
+          Termiz davlat muhandistlik va agrotexnologiyalar universiteti
+        </h1>
         <h2 class="text">Login</h2>
         <form class="form d-flex flex-column align-items-center m-5">
-          
-            <input
-              class="form_in number_end"
-              type="text"
-              placeholder="Logingizni Kiriting..."
-              v-model="data.phone"
-            />
-          
+          <input
+            class="form_in number_end"
+            type="text"
+            placeholder="Logingizni Kiriting..."
+            v-model="data.phone" />
+
           <input
             class="form_in"
             type="password"
             placeholder="Parolingizni Kiriting..."
-            v-model="data.password"
-          />
+            v-model="data.password" />
           <p class="text-danger">{{ xato }}</p>
           <button class="btn-form" @click="login">Login</button>
-        </form> 
+        </form>
         <p>login: siroj parol: 1234</p>
       </div>
     </div>
@@ -73,7 +72,7 @@ export default {
   font-weight: 400;
   font-size: 17px;
   line-height: 19px;
-  color: #0C8E36;
+  color: #0c8e36;
   cursor: pointer;
 }
 
@@ -93,7 +92,7 @@ export default {
   left: 15px;
 }
 .number_end {
-  padding:21px !important;
+  padding: 21px !important;
 }
 .form_in {
   width: 450px;
@@ -104,7 +103,7 @@ export default {
   border: none;
   background-color: #e6e6e6;
   border-radius: 15px;
-  outline-color: #0C8E36;
+  outline-color: #0c8e36;
 }
 .btn-form {
   margin-top: 50px;
@@ -114,12 +113,12 @@ export default {
   padding: 21px 69.5px;
   border: none;
   border-radius: 15px;
-  background-color: #0C8E36;
+  background-color: #0c8e36;
   color: #ffffff;
 }
 .btn-form:hover {
   background-color: #fff;
-  color: #0C8E36;
-  border: 2px solid #0C8E36;
+  color: #0c8e36;
+  border: 2px solid #0c8e36;
 }
 </style>
