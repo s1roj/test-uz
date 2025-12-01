@@ -11,7 +11,7 @@ const routes = [
     component: DefaultPage,
     children: [
       {
-        path: "/",
+        path: "",
         name: "home",
         component: Home,
         meta: { auth: true },
@@ -21,24 +21,23 @@ const routes = [
         name: "test",
         component: Test,
         meta: { auth: true },
-      }
-    ]
+      },
+    ],
   },
   {
     path: "/login",
     name: "login",
     component: Login,
-      },
-      {
-        path: "/404",
-        name: "404",
-        component: NotFound,
-      },
-      {
-        path: "/:catchAll(.*)",
-        redirect: "/404",
-      },
-      
+  },
+  {
+    path: "/404",
+    name: "404",
+    component: NotFound,
+  },
+  {
+    path: "/:catchAll(.*)",
+    redirect: "/404",
+  },
 ];
 
 const router = createRouter({
