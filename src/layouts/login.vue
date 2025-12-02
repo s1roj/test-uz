@@ -35,18 +35,18 @@ export default {
         phone: null,
         password: null,
       },
-      myPhone: "siroj",
-      myPassword: "1234",
+      admin: { phone: "siroj", password: "1234", role: "admin" },
       xato: null,
     };
   },
   methods: {
     login() {
       if (
-        this.data.phone == this.myPhone &&
-        this.data.password == this.myPassword
+        this.data.phone == this.admin.phone &&
+        this.data.password == this.admin.password
       ) {
         localStorage.setItem("token", "bu_token");
+        localStorage.setItem("role", this.admin.role);
         this.$router.push({ name: "home" });
       } else {
         this.xato = "Parol Yoki Raqam Xato!!";

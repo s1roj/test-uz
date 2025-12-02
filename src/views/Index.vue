@@ -1,47 +1,23 @@
 <template>
   <div class="home">
-    <div class="row gap-4 my-4 ms-4">
-      <div style="width: 300px" v-for="item of getTest" :key="item._id">
-        <router-link :to="`/test/${item._id}`">
-          <div class="card">
-            <div class="card-body">
-              <figure>
-                <blockquote class="blockquote">
-                  <p>
-                    {{ item.title }}
-                  </p>
-                </blockquote>
-                <figcaption class="blockquote-footer">
-                  {{ item.desc }}
-                </figcaption>
-              </figure>
-            </div>
-          </div>
-          <!-- <testCard /> -->
-        </router-link>
-      </div>
-    </div>
-    <div>
-      <div class="d-flex justify-content-end mx-4">
+    <div v-if="getRole == 'admin'">
+      <div class="d-flex justify-content-end mx-4 mt-3">
         <button
           class="btn btn-success d-none"
           :class="{ active: btnSuccess }"
-          @click="formActiveFunk()"
-        >
+          @click="formActiveFunk()">
           Test Qo'shish
         </button>
         <button
           class="btn btn-warning d-none"
           :class="{ active: btnWarning }"
-          @click="formNoActiveFunk()"
-        >
+          @click="formNoActiveFunk()">
           Orqaga
         </button>
       </div>
       <div
         class="d-flex justify-content-center d-none"
-        :class="{ active: formActive }"
-      >
+        :class="{ active: formActive }">
         <form style="max-width: 1080px; min-width: 576px" @submit.prevent>
           <div class="mb-3">
             <label for="exampleInputEmail1" class="form-label">Title</label>
@@ -63,6 +39,27 @@
         </form>
       </div>
     </div>
+    <div class="row gap-4 my-4 ms-4">
+      <div style="width: 300px" v-for="item of getTest" :key="item._id">
+        <router-link :to="`/test/${item._id}`">
+          <div class="card">
+            <div class="card-body">
+              <figure>
+                <blockquote class="blockquote">
+                  <p>
+                    {{ item.title }}
+                  </p>
+                </blockquote>
+                <figcaption class="blockquote-footer">
+                  {{ item.desc }}
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+          <!-- <testCard /> -->
+        </router-link>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -82,6 +79,7 @@ export default {
       desc: null,
       start: null,
       getTest: null,
+      getRole: localStorage.getItem("role"),
     };
   },
   created() {
@@ -89,6 +87,7 @@ export default {
       let result = res.data.data;
       this.getTest = result;
     });
+
   },
   methods: {
     formActiveFunk() {
@@ -111,6 +110,7 @@ export default {
         .post("http://localhost:3000/api/test/create", data)
         .then((res) => {
           console.log(res);
+          window.location.reload();
         })
         .catch((err) => {
           console.log(err);
