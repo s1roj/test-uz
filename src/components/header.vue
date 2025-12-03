@@ -34,6 +34,7 @@ export default {
   methods: {
     exit() {
       localStorage.removeItem("token");
+      localStorage.removeItem("randomTests");
       this.$router.push({ name: "login" });
     },
   },

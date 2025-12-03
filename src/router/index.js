@@ -4,6 +4,7 @@ import Login from "../layouts/login.vue";
 import NotFound from "../layouts/404.vue";
 import Home from "../views/Index.vue";
 import Test from "../views/test.vue";
+import Result from "../views/result.vue";
 
 const routes = [
   {
@@ -22,6 +23,12 @@ const routes = [
         component: Test,
         meta: { auth: true },
       },
+      {
+        path: "/result:id",
+        name: "result",
+        component: Result,
+        meta: { auth: true },
+      }
     ],
   },
   {
