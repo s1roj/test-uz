@@ -50,6 +50,17 @@
             <label for="file-upload"> Test qo'shish</label>
             <input id="file-upload" type="file" @change="selectFile" />
           </button>
+          <div class="d-flex gap-2">
+            <input
+              type="number"
+              class="form-control"
+              id="inputPassword2"
+              placeholder="Testlar sonini"
+              v-model="title" />
+            <button class="btn btn-warning" @click="loadRandomTests">
+              Qo'shish
+            </button>
+          </div>
           <router-link to="/"
             ><button class="btn btn-danger" @click="deleteTest">
               O'chirish
@@ -73,21 +84,30 @@
         <h2 class="text-center mt-4">Savollar</h2>
         <div
           class="d-flex flex-column mt-4"
-          v-for="item of tests"
+          v-for="(item, qIndex) in randomTests"
           :key="item._id">
           <div class="question d-flex flex-column mb-4">
-            <h3 class="text-start">{{ item.question }}</h3>
+            <h3 class="text-start">{{ qIndex + 1 }}. {{ item.question }}</h3>
+
             <div class="answers d-flex gap-4">
-              <div v-for="i of item.options" :key="i">
-                <label><input type="radio" name="q1" /> {{ i }} </label>
+              <div v-for="(option, optIndex) in item.options" :key="optIndex">
+                <label>
+                  <input
+                    type="radio"
+                    :name="'question_' + qIndex"
+                    :value="optIndex"
+                    v-model="userAnswers[qIndex]" />
+                  {{ option }}
+                </label>
               </div>
             </div>
           </div>
         </div>
+
         <div class="d-flex justify-content-center mb-4">
-          <router-link to="/result" class="btn btn-success"
-            >Javoblarni Yuborish</router-link
-          >
+          <button @click="finishExam" class="btn btn-success">
+            Testni yakunlash
+          </button>
         </div>
       </div>
     </div>
@@ -110,6 +130,9 @@ export default {
         testId: this.$route.params.id,
       },
       tests: null,
+      randomTests: [],
+      userAnswers: [],
+      limit: null,
     };
   },
   methods: {
@@ -148,23 +171,19 @@ export default {
     loadRandomTests() {
       const saved = localStorage.getItem("randomTests");
 
-      // ❗ undefined yoki null bo‘lsa → parse qilmaymiz
       if (saved && saved !== "undefined") {
         try {
           this.randomTests = JSON.parse(saved);
           return; // testlar qaytadan yuklanmaydi
         } catch (e) {
-          // Agar JSON buzilgan bo‘lsa → localStorage tozalaymiz
           localStorage.removeItem("randomTests");
         }
       }
-
-      // ❗ Birinchi marta yuklanishi (yoki oldingi JSON buzilgan bo‘lsa)
       this.axios
         .get("http://localhost:3000/api/testOne/random", {
           params: {
             testId: this.id,
-            limit: 25,
+            limit: this.limit,
           },
         })
         .then((res) => {
@@ -172,41 +191,44 @@ export default {
           this.tests = testFilter.filter(
             (testItem) => testItem.testId === this.id
           );
-          // JSON ichiga faqat object saqlaymiz
-          localStorage.setItem("randomTests", JSON.stringify(this.randomTests));
+          localStorage.setItem("randomTests", JSON.stringify(this.tests));
         })
         .catch((err) => {
           console.log(err);
         });
     },
+    finishExam() {
+      let correct = 0;
 
-    // loadRandomTests() {
-    //   // Agar oldin yuklangan bo‘lsa – qayta chaqarmaymiz
-    //   const saved = localStorage.getItem("randomTests");
-    //   if (saved) {
-    //     this.randomTests = JSON.parse(saved);
-    //     return; // qayta yuklanmaydi!
-    //   }
-    //   // Birinchi marta yuklash
-    //   this.axios
-    //     .get("http://localhost:3000/api/testOne/random", {
-    //       params: {
-    //         testId: this.id,
-    //         limit: 25,
-    //       },
-    //     })
-    //     .then((res) => {
-    //       const testFilter = res.data.tests;
-    //       this.tests = testFilter.filter(
-    //         (testItem) => testItem.testId === this.id
-    //       );
+      for (let i = 0; i < this.randomTests.length; i++) {
+        if (this.userAnswers[i] === this.randomTests[i].correctIndex) {
+          correct++;
+        }
+      }
 
-    //       localStorage.setItem("randomTests", JSON.stringify(this.randomTests));
-    //     })
-    //     .catch((err) => {
-    //       console.log(err);
-    //     });
-    // },
+      const total = this.randomTests.length;
+      const wrong = total - correct;
+      const percent = Math.round((correct / total) * 100);
+
+      let grade = 2;
+      if (percent >= 86) grade = 5;
+      else if (percent >= 71) grade = 4;
+      else if (percent >= 50) grade = 3;
+      else grade = 2;
+
+      const result = {
+        correct,
+        wrong,
+        total,
+        percent,
+        grade,
+      };
+
+      localStorage.setItem("examResult", JSON.stringify(result));
+
+      this.$router.push("/result");
+      console.log("User answers:", this.userAnswers);
+    },
   },
   created() {
     this.loadRandomTests();
