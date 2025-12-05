@@ -72,10 +72,13 @@
           <h3>{{ qIndex + 1 }}. {{ item.question }}</h3>
 
           <div class="answers d-flex gap-4">
-            <div v-for="(option, optIndex) in item.options" :key="optIndex" class="form-check">
+            <div
+              v-for="(option, optIndex) in item.options"
+              :key="optIndex"
+              class="form-check">
               <label class="form-check-label">
                 <input
-                class="form-check-input"
+                  class="form-check-input"
                   type="radio"
                   :name="'question_' + qIndex"
                   :value="optIndex"
@@ -228,11 +231,13 @@ export default {
           answers: this.userAnswers,
         })
         .then((res) => {
-          this.resultGo = res.data.data._id;
-          localStorage.setItem("attempt", "true");
-          localStorage.setItem("result", this.resultGo);
-          localStorage.setItem("attemptId", this.attemptId);
-          this.$router.push("/result/" + this.attemptId);
+          const attemptKey = "attempt_" + this.id;
+          const attemptIdKey = "attemptId_" + this.id;
+
+          localStorage.setItem(attemptKey, "true");
+          localStorage.setItem(attemptIdKey, this.attemptId);
+
+          this.$router.push("/result/" + this.id);
         })
         .catch((err) => {
           console.log(err);
@@ -241,28 +246,24 @@ export default {
   },
 
   created() {
-    this.startExam();
-    this.axios
-      .get("http://localhost:3000/api/test/byId/" + this.id)
-      .then((res) => {
-        const t = res.data;
-        this.test.title = t.title;
-        this.test.desc = t.desc;
-        this.test.start = t.start;
-      })
-      .catch((err) => console.log(err));
-    if (localStorage.getItem("attempt") === "true") {
-      if (localStorage.getItem("role") === "student") {
-        this.$router.push("/result/" + localStorage.getItem("attemptId"));
-        return;
-      }
+    this.testId = this.$route.params.attemptId;
+
+    const attemptKey = "attempt_" + this.testId;
+    const attemptIdKey = "attemptId_" + this.testId;
+
+    const attempt = localStorage.getItem(attemptKey);
+    const attemptId = localStorage.getItem(attemptIdKey);
+
+    if (attempt === "true" && attemptId) {
+      this.$router.push("/result/" + this.testId);
+      return;
     }
-    this.role = localStorage.getItem("role");
+
+    this.startExam();
+    this.loadTestInfo();
 
     if (this.role === "admin" || this.role === "teacher") {
-      this.showAdminPanel = true; // admin bo‘limini ko‘rsatish
-    }
-    if (this.role === "admin" || this.role === "teacher") {
+      this.showAdminPanel = true;
       this.loadAllResults();
     }
   },

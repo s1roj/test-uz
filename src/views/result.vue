@@ -70,7 +70,7 @@ export default {
         this.percent = result.percent;
         this.grade = result.grade;
         this.attemptId = result.attemptId;
-        console.log("Result data:", result);
+        // console.log("Result data:", result);
 
         // Endi questions ni olishga o'tamiz
         this.loadAttempt();
@@ -88,7 +88,6 @@ export default {
           "http://localhost:3000/api/attempt/" + this.attemptId
         );
         this.questions = res.data.data.questions;
-        log("Attempt data:", res.data.data);
       } catch (err) {
         console.log("Attempt API error:", err);
       }
@@ -116,7 +115,17 @@ export default {
   },
 
   created() {
-    this.loadResult(); // birinchi result → keyin attempt yuklanadi
+    const testId = this.$route.params.testId;
+    const attemptIdKey = "attemptId_" + testId;
+
+    this.attemptId = localStorage.getItem(attemptIdKey);
+
+    if (!this.attemptId) {
+      console.error("Natija topilmadi");
+      return;
+    }
+
+    this.loadResult();
   },
 };
 </script>
