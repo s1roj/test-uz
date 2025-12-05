@@ -7,7 +7,9 @@
         </router-link>
 
         <div class="d-flex gap-2">
-          <div class="d-flex gap-3 align-items-center">
+          <div
+            v-if="this.showAdminPanel"
+            class="d-flex gap-3 align-items-center">
             <!-- FILE UPLOAD -->
             <div>
               <label for="file-upload" class="btn btn-primary">
@@ -17,8 +19,7 @@
                 id="file-upload"
                 type="file"
                 style="display: none"
-                @change="handleFileSelect"
-              />
+                @change="handleFileSelect" />
             </div>
 
             <!-- RANDOM COUNT INPUT -->
@@ -27,46 +28,58 @@
               class="form-control"
               placeholder="Testlar soni"
               v-model="randomCount"
-              style="width: 125px"
-            />
+              style="width: 125px" />
 
             <!-- YUBORISH BUTTON -->
             <button class="btn btn-success" @click="uploadTestFile">
               Yuklash
             </button>
+            <router-link to="/">
+              <button class="btn btn-danger" @click="deleteTest">
+                O'chirish
+              </button>
+            </router-link>
           </div>
-
-          <router-link to="/">
-            <button class="btn btn-danger" @click="deleteTest">
-              O'chirish
-            </button>
-          </router-link>
         </div>
       </div>
     </div>
 
     <h1 class="pt-4">{{ test.title }}</h1>
+    <div v-if="showAdminPanel">
+      <div v-if="role === 'admin' || role === 'teacher'" class="mt-4">
+        <h2>Talabalar natijalari</h2>
 
-    <div class="main container">
+        <div
+          v-for="(r, index) in allResults"
+          :key="index"
+          class="p-3 mb-3 shadow-sm border rounded">
+          <h4>Talaba ID: {{ r.studentId }}</h4>
+          <p><b>To‘g‘ri:</b> {{ r.correct }}</p>
+          <p><b>Noto‘g‘ri:</b> {{ r.wrong }}</p>
+          <p><b>Foiz:</b> {{ r.percent }}%</p>
+          <p><b>Baho:</b> {{ r.grade }}</p>
+        </div>
+      </div>
+    </div>
+    <div v-if="this.showAdminPanel === false" class="main container">
       <h2 class="text-center mt-4">Savollar</h2>
 
       <div
         class="d-flex flex-column mt-4"
         v-for="(item, qIndex) in randomTests"
-        :key="item._id"
-      >
+        :key="item._id">
         <div class="question d-flex flex-column mb-4 align-items-start">
           <h3>{{ qIndex + 1 }}. {{ item.question }}</h3>
 
           <div class="answers d-flex gap-4">
-            <div v-for="(option, optIndex) in item.options" :key="optIndex">
-              <label>
+            <div v-for="(option, optIndex) in item.options" :key="optIndex" class="form-check">
+              <label class="form-check-label">
                 <input
+                class="form-check-input"
                   type="radio"
                   :name="'question_' + qIndex"
                   :value="optIndex"
-                  v-model="userAnswers[qIndex]"
-                />
+                  v-model="userAnswers[qIndex]" />
                 {{ option }}
               </label>
             </div>
@@ -95,33 +108,33 @@ export default {
       userAnswers: [],
       randomCount: null,
       attemptId: null,
+      resultGo: null,
+      showAdminPanel: false,
+      tests: [],
+      role: localStorage.getItem("role"),
+      allResults: [],
     };
   },
 
   methods: {
-    // START TEST (backend attempt)
-    // startExam() {
-    //   let studentId = localStorage.getItem("demoStudentId");
-    //   if (!studentId) {
-    //     studentId = "demo_" + Math.random().toString(36).substring(2, 10);
-    //     localStorage.setItem("demoStudentId", studentId);
-    //   }
+    async loadAllResults() {
+      try {
+        const res = await this.axios.get(
+          "http://localhost:3000/api/test/" + this.$route.params.id + "/results"
+        );
 
-    //   this.axios
-    //     .get("http://localhost:3000/api/testOne/start", {
-    //       params: {
-    //         studentId,
-    //         testId: this.id,
-    //       },
-    //     })
-    //     .then((res) => {
-    //       this.randomTests = res.data.questions;
-    //       this.attemptId = res.data.attemptId;
-    //       localStorage.setItem("attemptId", this.attemptId);
-    //       this.userAnswers = new Array(this.randomTests.length).fill(null);
-    //     })
-    //     .catch((err) => console.log(err));
-    // },
+        if (!res.data || !res.data.data) {
+          console.log("Natija topilmadi");
+          return;
+        }
+
+        this.allResults = res.data.data;
+
+        // console.log("Teacher/Admin Results:", this.allResults);
+      } catch (error) {
+        console.log("Natijalarni olishda xatolik:", error);
+      }
+    },
     startExam() {
       let studentId = localStorage.getItem("demoStudentId");
       if (!studentId) {
@@ -138,12 +151,12 @@ export default {
           this.randomTests = res.data.questions;
           this.attemptId = res.data.attemptId;
           this.userAnswers = new Array(this.randomTests.length).fill(null);
+          // console.log(res.data);
         })
         .catch((err) => {
           console.log("Start attempt error:", err);
         });
     },
-    // WORD FILE UPLOAD (randomCount yuboriladi)
     handleFileSelect(event) {
       this.selectedFile = event.target.files[0];
       console.log("Tanlangan fayl:", this.selectedFile);
@@ -198,9 +211,9 @@ export default {
       const percent = Math.round((correct / this.randomTests.length) * 100);
 
       let grade = 2;
-      if (percent >= 86) grade = 5;
-      else if (percent >= 71) grade = 4;
-      else if (percent >= 50) grade = 3;
+      if (percent >= 90) grade = 5;
+      else if (percent >= 80) grade = 4;
+      else if (percent >= 70) grade = 3;
 
       this.axios
         .post("http://localhost:3000/api/result/save", {
@@ -215,9 +228,11 @@ export default {
           answers: this.userAnswers,
         })
         .then((res) => {
-          const resultGo = res.data.data._id;
-          this.$router.push("/result/" + resultGo);
-          console.log(resultGo);
+          this.resultGo = res.data.data._id;
+          localStorage.setItem("attempt", "true");
+          localStorage.setItem("result", this.resultGo);
+          localStorage.setItem("attemptId", this.attemptId);
+          this.$router.push("/result/" + this.attemptId);
         })
         .catch((err) => {
           console.log(err);
@@ -236,6 +251,20 @@ export default {
         this.test.start = t.start;
       })
       .catch((err) => console.log(err));
+    if (localStorage.getItem("attempt") === "true") {
+      if (localStorage.getItem("role") === "student") {
+        this.$router.push("/result/" + localStorage.getItem("attemptId"));
+        return;
+      }
+    }
+    this.role = localStorage.getItem("role");
+
+    if (this.role === "admin" || this.role === "teacher") {
+      this.showAdminPanel = true; // admin bo‘limini ko‘rsatish
+    }
+    if (this.role === "admin" || this.role === "teacher") {
+      this.loadAllResults();
+    }
   },
 };
 </script>

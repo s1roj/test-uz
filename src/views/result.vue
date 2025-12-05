@@ -17,8 +17,7 @@
       <div
         v-for="(q, qIndex) in questions"
         :key="qIndex"
-        class="question-block mb-4 p-3 shadow-sm bg-white rounded"
-      >
+        class="question-block mb-4 p-3 shadow-sm bg-white rounded">
         <h4>{{ qIndex + 1 }}. {{ q.question }}</h4>
 
         <div v-for="(opt, optIndex) in q.options" :key="optIndex">
@@ -41,8 +40,6 @@
 export default {
   data() {
     return {
-      resultId: this.$route.params.id,
-
       questions: [], // attempt API
       answers: [], // result API
       correctCount: 0,
@@ -51,7 +48,7 @@ export default {
       percent: 0,
       grade: 0,
 
-      attemptId: null,
+      attemptId: localStorage.getItem("attemptId"),
     };
   },
 
@@ -60,10 +57,10 @@ export default {
     async loadResult() {
       try {
         const res = await this.axios.get(
-          "http://localhost:3000/api/result/" + this.resultId
+          "http://localhost:3000/api/result/" + this.attemptId
         );
 
-        const result = res.data;
+        const result = res.data.data;
 
         // Result ichidan keladigan ma’lumotlar
         this.answers = result.answers;
@@ -73,6 +70,7 @@ export default {
         this.percent = result.percent;
         this.grade = result.grade;
         this.attemptId = result.attemptId;
+        console.log("Result data:", result);
 
         // Endi questions ni olishga o'tamiz
         this.loadAttempt();
@@ -89,8 +87,8 @@ export default {
         const res = await this.axios.get(
           "http://localhost:3000/api/attempt/" + this.attemptId
         );
-
         this.questions = res.data.data.questions;
+        log("Attempt data:", res.data.data);
       } catch (err) {
         console.log("Attempt API error:", err);
       }
