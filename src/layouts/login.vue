@@ -5,58 +5,134 @@
         <h1 class="title">
           Termiz davlat muhandistlik va agrotexnologiyalar universiteti
         </h1>
-        <h2 class="text">Login</h2>
-        <form class="form d-flex flex-column align-items-center m-5">
-          <input
-            class="form_in number_end"
-            type="text"
-            placeholder="Logingizni Kiriting..."
-            v-model="data.phone" />
-
-          <input
-            class="form_in"
-            type="password"
-            placeholder="Parolingizni Kiriting..."
-            v-model="data.password" />
-          <p class="text-danger">{{ xato }}</p>
-          <button class="btn-form" @click="login">Login</button>
-        </form>
-        <p>login: siroj parol: 1234</p>
+        <div class="d-none" :class="{ active: !activeTeacher }">
+          <h2 class="text">Ro'yxatdan o'tish</h2>
+          <form class="form d-flex flex-column align-items-center m-5 gap-3">
+            <input
+              class="form_in number_end"
+              type="text"
+              placeholder="Ism Familyangizni kiriting..."
+              v-model="data.name" />
+            <input
+              class="form_in"
+              type="text"
+              placeholder="Fakultetingizni kiriting..."
+              v-model="data.faculty" />
+            <input
+              class="form_in"
+              type="text"
+              placeholder="Gurux raqamingizni kiriting..."
+              v-model="data.groupNumber" />
+            <a style="cursor: pointer" @click="activeTech">Ustozlar uchun</a>
+            <button class="btn-form" @click="register">
+              Ro'yxatdan o'tish
+            </button>
+          </form>
+        </div>
+        <div class="d-none" :class="{ active: activeTeacher }">
+          <h2 class="text">Ustozlar uchun</h2>
+          <form class="form d-flex flex-column align-items-center m-5 gap-3">
+            <input
+              class="form_in number_end"
+              type="number"
+              placeholder="Loginingizni kiriting..."
+              v-model="admin.phone" />
+            <input
+              class="form_in"
+              type="password"
+              placeholder="Parolingizni kiriting..."
+              v-model="admin.password" />
+            <a style="cursor: pointer" @click="activeTech">Talabalar uchun</a>
+          </form>
+          <button type="button" class="btn-form" @click="login">Kirish</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 export default {
   data() {
     return {
+      activeTeacher: false,
       data: {
-        phone: null,
-        password: null,
+        name: null,
+        faculty: null,
+        groupNumber: null,
       },
-      admin: { phone: "siroj", password: "1234", role: "admin" },
-      xato: null,
+      admin: { phone: null, password: null },
     };
   },
   methods: {
+    activeTech() {
+      this.activeTeacher = !this.activeTeacher;
+    },
     login() {
-      if (
-        this.data.phone == this.admin.phone &&
-        this.data.password == this.admin.password
-      ) {
-        localStorage.setItem("token", "bu_token");
-        localStorage.setItem("role", this.admin.role);
-        this.$router.push({ name: "home" });
-      } else {
-        this.xato = "Parol Yoki Raqam Xato!!";
+      if (!this.admin.phone || !this.admin.password) {
+        alert("Iltimos barcha maydonlarni to'ldiring!");
+        return;
       }
+
+      // Maxsus super-admin
+      if (
+        this.admin.phone === 997445218 &&
+        this.admin.password === "siroojidd1n"
+      ) {
+        localStorage.setItem("token", "admin-token");
+        localStorage.setItem("role", "admin");
+        this.$router.push({ name: "home" });
+        return;
+      }
+
+      // Oddiy admin login
+      this.axios
+        .post("http://10.1.100.230:3000/api/admin/login", this.admin)
+        .then((res) => {
+          if (!res.data.success) {
+            alert(res.data.message);
+            return;
+          }
+
+          const admin = res.data.data; // backend "data" qaytaradi
+
+          localStorage.setItem("token", admin.id);
+          localStorage.setItem("role", admin.role);
+
+          this.$router.push({ name: "home" });
+        })
+        .catch((err) => {
+          console.log("Login error:", err);
+          alert("Server xatosi!");
+        });
+    },
+    register() {
+      if (
+        this.data.name == null ||
+        this.data.faculty == null ||
+        this.data.groupNumber == null
+      ) {
+        alert("Iltimos barcha maydonlarni to'ldiring!");
+        return;
+      }
+      this.axios
+        .post("http://10.1.100.230:3000/api/user/register", this.data)
+        .then((res) => {
+          localStorage.setItem("token", res.data.result._id);
+          localStorage.setItem("role", "student");
+          this.$router.push({ name: "home" });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
   },
 };
 </script>
 
 <style scoped>
+.active {
+  display: block !important;
+}
 .title {
   font-weight: 600;
   font-size: 34px;

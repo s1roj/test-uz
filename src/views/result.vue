@@ -17,7 +17,8 @@
       <div
         v-for="(q, qIndex) in questions"
         :key="qIndex"
-        class="question-block mb-4 p-3 shadow-sm bg-white rounded">
+        class="question-block mb-4 p-3 shadow-sm bg-white rounded"
+      >
         <h4>{{ qIndex + 1 }}. {{ q.question }}</h4>
 
         <div v-for="(opt, optIndex) in q.options" :key="optIndex">
@@ -53,11 +54,16 @@ export default {
   },
 
   methods: {
+    exitFullScreen() {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    },
     // 1. RESULT API da umumiy natijalar va attemptId ni olamiz
     async loadResult() {
       try {
         const res = await this.axios.get(
-          "http://localhost:3000/api/result/" + this.attemptId
+          "http://10.1.100.230:3000/api/result/" + this.attemptId
         );
 
         const result = res.data.data;
@@ -70,7 +76,6 @@ export default {
         this.percent = result.percent;
         this.grade = result.grade;
         this.attemptId = result.attemptId;
-        // console.log("Result data:", result);
 
         // Endi questions ni olishga o'tamiz
         this.loadAttempt();
@@ -85,7 +90,7 @@ export default {
 
       try {
         const res = await this.axios.get(
-          "http://localhost:3000/api/attempt/" + this.attemptId
+          "http://10.1.100.230:3000/api/attempt/" + this.attemptId
         );
         this.questions = res.data.data.questions;
       } catch (err) {
@@ -115,16 +120,7 @@ export default {
   },
 
   created() {
-    const testId = this.$route.params.testId;
-    const attemptIdKey = "attemptId_" + testId;
-
-    this.attemptId = localStorage.getItem(attemptIdKey);
-
-    if (!this.attemptId) {
-      console.error("Natija topilmadi");
-      return;
-    }
-
+    this.exitFullScreen();
     this.loadResult();
   },
 };

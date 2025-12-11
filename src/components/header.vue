@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg border-bottom">
     <div class="container-fluid">
-      <a class="navbar-brand d-flex align-items-canter" href="#">
+      <a class="navbar-brand d-flex align-items-canter">
         <img style="width: 75px" src="@/assets/logo.png" alt="" />
         <h5 class="mt-3 fw-bold">
           TerDMAU <br />
@@ -21,7 +21,7 @@
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav"></div>
         <div class="d-flex ms-auto align-items-center gap-3">
-          <h4 class="m-auto">Profil</h4>
+          <h4 class="m-auto">{{ this.name }}</h4>
           <button @click="exit()" class="btn btn-danger">Chiqish</button>
         </div>
       </div>
@@ -31,12 +31,30 @@
 
 <script>
 export default {
+  data() {
+    return {
+      name: null,
+      token: localStorage.getItem("token"),
+      role: localStorage.getItem("role"),
+    };
+  },
   methods: {
     exit() {
       localStorage.removeItem("token");
-      localStorage.removeItem("randomTests");
+      localStorage.removeItem("role");
       this.$router.push({ name: "login" });
     },
+  },
+  created() {
+    if (this.role === "admin") {
+      this.name = "Admin";
+    } else if (this.role === "student") {
+      this.axios
+        .get("http://10.1.100.230:3000/api/user/" + this.token)
+        .then((res) => {
+          this.name = res.data.result.name;
+        });
+    }
   },
 };
 </script>

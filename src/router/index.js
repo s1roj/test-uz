@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import DefaultPage from "../layouts/default.vue";
 import Login from "../layouts/login.vue";
 import NotFound from "../layouts/404.vue";
@@ -28,7 +28,13 @@ const routes = [
         name: "result",
         component: Result,
         meta: { auth: true },
-      }
+      },
+      {
+        path: "/admin",
+        name: "admin",
+        component: () => import("../views/admin.vue"),
+        meta: { auth: true, role: "admin" },
+      },
     ],
   },
   {
@@ -48,7 +54,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 
