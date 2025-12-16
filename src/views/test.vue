@@ -5,24 +5,17 @@
         <router-link to="/" class="d-none" :class="{ active: !btnTest }">
           <button class="btn btn-secondary">Orqaga</button>
         </router-link>
-
         <div class="d-flex gap-2">
-          <div
-            v-if="this.showAdminPanel"
-            class="d-flex gap-3 align-items-center">
-            <!-- FILE UPLOAD -->
-            <div>
-              <label for="file-upload" class="btn btn-primary">
-                Test faylini tanlash
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                style="display: none"
-                @change="handleFileSelect" />
-            </div>
+          <div v-if="isTeaAd" class="d-flex gap-3 align-items-center">
+            <label for="file-upload" class="btn btn-primary">
+              Test faylini tanlash
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              hidden
+              @change="handleFileSelect" />
 
-            <!-- RANDOM COUNT INPUT -->
             <input
               type="number"
               class="form-control"
@@ -30,44 +23,46 @@
               v-model="randomCount"
               style="width: 125px" />
 
-            <!-- YUBORISH BUTTON -->
             <button class="btn btn-success" @click="uploadTestFile">
               Yuklash
             </button>
-            <router-link v-if="role === 'admin'" to="/">
-              <button class="btn btn-danger" @click="deleteTest">
-                O'chirish
-              </button>
-            </router-link>
+            <button
+              class="btn"
+              :class="test.isActive ? 'btn-danger' : 'btn-success'"
+              @click="toggleTest">
+              {{ test.isActive ? "Yopish" : "Ochish" }}
+            </button>
+            <button v-if="isAdmin" class="btn btn-danger" @click="deleteTest">
+              O'chirish
+            </button>
           </div>
         </div>
       </div>
     </div>
     <h1 class="pt-4">{{ test.title }}</h1>
-    <div v-if="showAdminPanel">
-      <div v-if="role === 'admin' || role === 'teacher'" class="mt-4">
-        <div class="d-flex justify-content-center align-items-center gap-3">
-          <h2 class="my-4">
-            Test kodi: <span>{{ test.testCode }}</span>
-          </h2>
-          <button
-            class="btn btn-secondary btn-sm"
-            style="max-height: 40px"
-            @click="copyParamId">
-            Copy
-          </button>
+    <div v-if="isJunTeaAd">
+      <div>
+        <div class="my-4 row justify-content-center">
+          <div
+            class="d-flex justify-content-center gap-3 col-4 align-items-center">
+            <h2 class="m-0">Talabalar natijalari</h2>
+            <button
+              v-if="isTeaAd"
+              class="btn btn-sm btn-secondary"
+              @click="downloadWord">
+              Wordga yuklash
+            </button>
+          </div>
+          <div
+            class="col-4 d-flex justify-content-center align-items-center gap-3">
+            <h2 class="m-0">
+              Test kodi: <span>{{ test.testCode }}</span>
+            </h2>
+            <button class="btn btn-secondary btn-sm" @click="copyParamId">
+              Copy
+            </button>
+          </div>
         </div>
-        <div class="d-flex justify-content-center gap-3">
-          <h2>Talabalar natijalari</h2>
-          <button
-            v-if="this.role === 'admin'"
-            class="btn btn-sm btn-secondary"
-            style="height: 40px"
-            @click="downloadWord">
-            Wordga yuklash
-          </button>
-        </div>
-
         <div
           v-if="allResults.length === 0"
           class="p-3 mb-3 shadow-sm border rounded">
@@ -76,7 +71,7 @@
         <div
           v-for="(r, index) in allResults"
           :key="index"
-          class="p-3 mb-3 shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mt-3">
+          class="p-3 shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2">
           <h4>Talaba: {{ r.studentId.name }}</h4>
           <p><b>Fakultet:</b> {{ r.studentId.faculty }}</p>
           <p><b>Guruh:</b> {{ r.studentId.groupNumber }}</p>
@@ -85,12 +80,78 @@
           <p><b>Foiz:</b> {{ r.percent }}%</p>
           <p><b>Baho:</b> {{ r.grade }}</p>
           <p><b>Test yakunlangan vaqt:</b> {{ formatDate(r.createdAt) }}</p>
+          <button
+            v-if="isAdmin"
+            class="btn btn-sm btn-warning"
+            @click="openEditModal(r)">
+            Tahrirlash
+          </button>
+
+          <div class="modal fade" id="editResultModal" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Natijani tahrirlash</h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                  <div class="mb-2">
+                    <label>To‘g‘ri</label>
+                    <input
+                      type="number"
+                      v-model="editResult.correct"
+                      class="form-control" />
+                  </div>
+
+                  <div class="mb-2">
+                    <label>Noto‘g‘ri</label>
+                    <input
+                      type="number"
+                      v-model="editResult.wrong"
+                      class="form-control" />
+                  </div>
+
+                  <div class="mb-2">
+                    <label>Foiz</label>
+                    <input
+                      type="number"
+                      v-model="editResult.percent"
+                      class="form-control" />
+                  </div>
+
+                  <div class="mb-2">
+                    <label>Baho</label>
+                    <select v-model="editResult.grade" va class="form-select">
+                      <option :value="2">2</option>
+                      <option :value="3">3</option>
+                      <option :value="4">4</option>
+                      <option :value="5">5</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Bekor
+                  </button>
+                  <button class="btn btn-success" @click="updateResult">
+                    Saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        <!-- Edit Result Modal -->
       </div>
     </div>
     <div>
       <div
-        v-if="this.showAdminPanel === false && this.already !== true"
+        v-if="showAdminPanel === false && this.already !== true"
         class="main container">
         <div class="">
           <div
@@ -141,7 +202,12 @@
       <div class="mt-4" v-else-if="this.already === true">
         <h2 class="text-center">Siz allaqachon ushbu testni topshirdingiz.</h2>
       </div>
-      <div class="mt-4" v-if="this.role === 'student'">
+      <div
+        class=""
+        v-if="this.test.isActive === false && this.role === 'student'">
+        <h1 class="text alert alert-danger">Test hozrcha yopiq !</h1>
+      </div>
+      <div class="mt-4" v-else-if="this.role === 'student'">
         <div
           :class="{ active: !btnTest }"
           class="d-none alert alert-warning text-start"
@@ -195,10 +261,17 @@
 export default {
   data() {
     return {
+      editResult: {
+        _id: "",
+        correct: null,
+        wrong: null,
+        percent: null,
+        grade: null,
+      },
       id: this.$route.params.id,
       randomCount: null,
       selectedFile: null,
-      test: { title: null, desc: null, start: null, testCode: null },
+      test: {},
       randomTests: [],
       userAnswers: [],
       randomCount: null,
@@ -218,10 +291,46 @@ export default {
       timeLeft: "",
       testRealId: null,
       answerError: "",
+      testClosed: null,
     };
   },
 
   methods: {
+    openEditModal(result) {
+      this.editResult = { ...result };
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("editResultModal")
+      );
+      modal.show();
+    },
+    async toggleTest() {
+      const res = await this.axios.put(`/api/test/toggle/${this.testRealId}`);
+      this.test.isActive = res.data.isActive;
+      console.log(this.test.isActive);
+    },
+    async updateResult() {
+      try {
+        await this.axios.put(`/api/result/edit/${this.editResult._id}`, {
+          correct: this.editResult.correct,
+          wrong: this.editResult.wrong,
+          percent: this.editResult.percent,
+          grade: this.editResult.grade,
+        });
+
+        alert("Natija yangilandi");
+
+        // modal yopish
+        bootstrap.Modal.getInstance(
+          document.getElementById("editResultModal")
+        ).hide();
+
+        window.location.reload();
+      } catch (err) {
+        console.error(err);
+        alert("Xatolik yuz berdi");
+      }
+    },
     copyParamId() {
       const text = this.test.testCode;
       navigator.clipboard
@@ -248,7 +357,6 @@ export default {
           return;
         }
         this.allResults = res.data.data;
-        console.log(res.data.data);
       } catch (error) {
         console.log("Natijalarni olishda xatolik:", error);
       }
@@ -285,6 +393,9 @@ export default {
           testId: this.testRealId,
         })
         .then((res) => {
+          if (res.data.reason === "closed") {
+            this.testClosed = true;
+          }
           // 1) Agar testni oldin tugatgan bo‘lsa:
           if (res.data.already === true) {
             alert("Siz bu testni allaqachon yakunlagansiz!");
@@ -433,7 +544,10 @@ export default {
     downloadWord() {
       const testId = this.$route.params.id;
 
-      window.open(`/api/test/${testId}/results/word`);
+      window.open(
+        `http://10.1.100.11:8800/api/test/${testId}/results/word`,
+        "_blank"
+      );
     },
     autoFinishExam(reason) {
       if (this.role !== "student") return;
@@ -502,42 +616,32 @@ export default {
   },
 
   created() {
-    if (this.role === "student") {
-      this.axios
-        .get("/api/test/byCode/" + this.id)
-        .then((res) => {
-          const t = res.data.data;
-          this.testRealId = t._id;
-          this.test.title = t.title;
-          this.test.desc = t.desc;
-          this.test.start = t.start;
-          this.test.testCode = t.testCode;
-        })
-        .catch((err) => console.log(err));
+    this.role = localStorage.getItem("role");
 
-      this.role = localStorage.getItem("role");
-    }
+    const url =
+      this.role === "student"
+        ? `/api/test/byCode/${this.id}`
+        : `/api/test/byId/${this.id}`;
 
-    if (this.role === "admin" || this.role === "teacher") {
-      this.showAdminPanel = true;
+    this.axios.get(url).then((res) => {
+      this.test = res.data.data;
+      this.testRealId = this.test._id;
 
-      this.axios
-        .get("/api/test/byId/" + this.id)
-        .then((res) => {
-          const t = res.data.data;
-          this.testRealId = t._id;
-          this.test.title = t.title;
-          this.test.desc = t.desc;
-          this.test.start = t.start;
-          this.test.testCode = t.testCode;
-        })
-        .catch((err) => console.log(err));
-
-      this.role = localStorage.getItem("role");
-    }
-    if (this.role === "admin" || this.role === "teacher") {
-      this.loadAllResults();
-    }
+      if (this.isJunTeaAd) {
+        this.loadAllResults();
+      }
+    });
+  },
+  computed: {
+    isAdmin() {
+      return this.role === "admin";
+    },
+    isTeaAd() {
+      return ["admin", "teacher"].includes(this.role);
+    },
+    isJunTeaAd() {
+      return ["admin", "teacher", "junior-teacher"].includes(this.role);
+    },
   },
 };
 </script>

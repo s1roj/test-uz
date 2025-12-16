@@ -7,7 +7,7 @@
         </h1>
         <div class="d-none" :class="{ active: !activeTeacher }">
           <h2 class="text">Ro'yxatdan o'tish</h2>
-          <form class="form d-flex flex-column align-items-center m-5 gap-3">
+          <div class="form d-flex flex-column align-items-center m-5 gap-3">
             <input
               class="form_in number_end"
               type="text"
@@ -27,23 +27,26 @@
             <button class="btn-form" @click="register">
               Ro'yxatdan o'tish
             </button>
-          </form>
+          </div>
         </div>
         <div class="d-none" :class="{ active: activeTeacher }">
           <h2 class="text">Ustozlar uchun</h2>
-          <form class="form d-flex flex-column align-items-center m-5 gap-3">
-            <input
-              class="form_in number_end"
-              type="number"
-              placeholder="Loginingizni kiriting..."
-              v-model="admin.phone" />
+          <div class="form d-flex flex-column align-items-center m-5 gap-3">
+            <div class="d-flex justify-content-center form_number">
+              <span class="col-2 phone-input">+998</span>
+              <input
+                type="number"
+                class="col-10 form_inn phone-input"
+                placeholder="90 123 45 67"
+                v-model="admin.phone" />
+            </div>
             <input
               class="form_in"
               type="password"
               placeholder="Parolingizni kiriting..."
               v-model="admin.password" />
             <a style="cursor: pointer" @click="activeTech">Talabalar uchun</a>
-          </form>
+          </div>
           <button type="button" class="btn-form" @click="login">Kirish</button>
         </div>
       </div>
@@ -68,6 +71,8 @@ export default {
       this.activeTeacher = !this.activeTeacher;
     },
     login() {
+      console.log(this.admin);
+
       if (!this.admin.phone || !this.admin.password) {
         alert("Iltimos barcha maydonlarni to'ldiring!");
         return;
@@ -170,6 +175,12 @@ export default {
 .number_end {
   padding: 21px !important;
 }
+.form_number {
+  width: 450px;
+  background-color: #e6e6e6;
+  border-radius: 15px;
+  outline-color: #0c8e36;
+}
 .form_in {
   width: 450px;
   font-size: 20px;
@@ -180,6 +191,17 @@ export default {
   background-color: #e6e6e6;
   border-radius: 15px;
   outline-color: #0c8e36;
+}
+.form_inn,
+span {
+  border: none;
+  outline: none;
+  font-size: 20px;
+  line-height: 21px;
+  font-weight: 400;
+  padding: 21px;
+  border-radius: 15px;
+  background-color: #e6e6e6;
 }
 .btn-form {
   margin-top: 50px;
@@ -196,5 +218,8 @@ export default {
   background-color: #fff;
   color: #0c8e36;
   border: 2px solid #0c8e36;
+}
+.phone-input {
+  color: #6c757d;
 }
 </style>
