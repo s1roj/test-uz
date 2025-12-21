@@ -5,5 +5,5 @@ export const api = axios.create({
 });
 
 export const studentApi = axios.create({
-  baseURL: "https://student.tdmau.uz/rest/v1",
+  baseURL: "https://student.tdmau.uz/rest",
 });
