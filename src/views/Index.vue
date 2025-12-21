@@ -5,7 +5,8 @@
         <button
           class="btn btn-success d-none"
           :class="{ active: btnSuccess }"
-          @click="formActiveFunk()">
+          @click="formActiveFunk()"
+        >
           Test Qo'shish
         </button>
         <div v-if="isAdmin">
@@ -17,11 +18,13 @@
       <div
         v-if="isTeaAd"
         class="d-flex justify-content-center d-none"
-        :class="{ active: formActive }">
+        :class="{ active: formActive }"
+      >
         <div class="modal" style="display: block">
           <div
             class="modal-dialog"
-            style="margin: auto; min-width: 65%; top: 25%; margin: auto">
+            style="margin: auto; min-width: 65%; top: 25%; margin: auto"
+          >
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">Test Qo'shish</h5>
@@ -29,7 +32,8 @@
                   @click="formNoActiveFunk()"
                   class="btn-close"
                   data-bs-dismiss="modal"
-                  aria-label="Close"></button>
+                  aria-label="Close"
+                ></button>
               </div>
               <div class="modal-body">
                 <div style="max-width: 1080px; min-width: 576px">
@@ -41,7 +45,8 @@
                       type="text"
                       class="form-control"
                       id="exampleInputTitle"
-                      v-model="title" />
+                      v-model="title"
+                    />
                   </div>
                   <div class="mb-3">
                     <label for="exampleInputDesc" class="form-label"
@@ -50,7 +55,8 @@
                     <textarea
                       id="exampleInputDesc"
                       class="form-control"
-                      v-model="desc"></textarea>
+                      v-model="desc"
+                    ></textarea>
                   </div>
                   <div class="mb-3">
                     <label for="exampleInputTime" class="form-label"
@@ -61,7 +67,8 @@
                       type="number"
                       class="form-control"
                       v-model="duration"
-                      placeholder="Minutlarda.." />
+                      placeholder="Minutlarda.."
+                    />
                   </div>
                 </div>
               </div>
@@ -77,10 +84,12 @@
           class="mt-4"
           style="width: 300px"
           v-for="item of reversedTests"
-          :key="item._id">
+          :key="item._id"
+        >
           <router-link
             class="text-decoration-none text-dark"
-            :to="`/test/${item._id}`">
+            :to="`/test/${item._id}`"
+          >
             <div class="card">
               <div class="card-body">
                 <figure>
@@ -102,10 +111,12 @@
     <div
       v-else
       class="main_test d-flex justify-content-center align-items-center"
-      style="min-height: 100vh; background: #f5f7fa">
+      style="min-height: 100vh; background: #f5f7fa"
+    >
       <div
         class="card shadow-lg p-4"
-        style="max-width: 550px; width: 100%; border-radius: 12px">
+        style="max-width: 550px; width: 100%; border-radius: 12px"
+      >
         <div class="text-center mb-4">
           <h3 class="fw-bold">
             Termiz davlat muhandistlik va agrotexnologiyalar universiteti
@@ -123,7 +134,8 @@
             type="text"
             class="form-control form-control-lg"
             placeholder="Masalan: 4821"
-            v-model="testCode" />
+            v-model="testCode"
+          />
         </div>
 
         <!-- Error -->
@@ -139,7 +151,8 @@
         <!-- Alert info -->
         <div
           class="alert alert-warning mt-4 text-center"
-          style="font-size: 15px">
+          style="font-size: 15px"
+        >
           Test yakunlangach profilingizdan chiqib ketishingizni so'raymiz!
           <br />
           Bu sizning ma'lumotlaringiz xavfsizligini ta'minlash uchun.
@@ -151,6 +164,7 @@
 
 <script>
 import testCard from "@/components/test-card.vue";
+import { api, studentApi } from "@/services/axios";
 
 export default {
   components: {
@@ -166,7 +180,7 @@ export default {
       desc: null,
       duration: null,
       getTest: [],
-      getRole: localStorage.getItem("role"),
+      getRole: null,
       testCodeError: false,
     };
   },
@@ -187,7 +201,7 @@ export default {
         desc: this.desc,
         duration: this.duration,
       };
-      this.axios
+      api
         .post("/api/test/create", data)
         .then((res) => {
           console.log(res);
@@ -199,7 +213,7 @@ export default {
     },
     testCod() {
       if (this.testCode) {
-        this.axios
+        api
           .get(`/api/test/byCode/` + this.testCode)
           .then((res) => {
             const testCode = res.data.data.testCode;
@@ -212,21 +226,31 @@ export default {
     },
   },
   created() {
-    this.axios.get("/api/test/all").then((res) => {
+    api.get("/api/test/all").then((res) => {
       let result = res.data.data;
       this.getTest = result;
     });
-    this.axios
+    api
       .get("/api/admin/decode", {
         headers: {
           token: localStorage.getItem("token"),
         },
       })
       .then((res) => {
-        console.log(res.data);
-        if (!res.data.success) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
+        let result = res.data;
+        if (result.success) {
+          api
+            .get("/api/admin/" + result.decodedToken.adminId)
+            .then((response) => {
+              this.getRole = response.data.result.role;
+              this.$store.state.admin = response.data.result;
+              console.log(this.getRole);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } else {
+          localStorage.clear();
           this.$router.push({ name: "login" });
         }
       })

@@ -12,12 +12,14 @@
               class="form_in"
               type="text"
               placeholder="Loginingizni kiriting..."
-              v-model="data.login" />
+              v-model="data.login"
+            />
             <input
               class="form_in"
               type="password"
               placeholder="Parolingizni kiriting..."
-              v-model="data.password" />
+              v-model="data.password"
+            />
             <a style="cursor: pointer" @click="activeTech">Ustozlar uchun</a>
             <button class="btn-form" @click="register">Kirish</button>
           </div>
@@ -31,13 +33,15 @@
                 type="number"
                 class="col-10 form_inn phone-input"
                 placeholder="90 123 45 67"
-                v-model="admin.phone" />
+                v-model="admin.phone"
+              />
             </div>
             <input
               class="form_in"
               type="password"
               placeholder="Parolingizni kiriting..."
-              v-model="admin.password" />
+              v-model="admin.password"
+            />
             <a style="cursor: pointer" @click="activeTech">Talabalar uchun</a>
           </div>
           <button type="button" class="btn-form" @click="login">Kirish</button>
@@ -47,6 +51,8 @@
   </div>
 </template>
 <script>
+import { api, studentApi } from "@/services/axios";
+
 export default {
   data() {
     return {
@@ -82,7 +88,7 @@ export default {
       }
 
       // Oddiy admin login
-      this.axios
+      api
         .post("/api/admin/login", this.admin)
         .then((res) => {
           if (!res.data.success) {
@@ -104,7 +110,7 @@ export default {
         alert("Iltimos barcha maydonlarni to'ldiring!");
         return;
       }
-      this.axios
+      studentApi
         .post("/v1/auth/login", this.data)
         .then((res) => {
           console.log(res.data);

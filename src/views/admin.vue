@@ -4,7 +4,8 @@
       to="/"
       type="button"
       class="btn-close position-absolute top-0 end-0"
-      aria-label="Close"></router-link>
+      aria-label="Close"
+    ></router-link>
     <h2 class="text-center mb-4">Admin boshqaruv paneli</h2>
     <!-- REGISTER FORM -->
     <div class="card p-4 mb-4 shadow-sm">
@@ -14,15 +15,18 @@
         <input
           v-model="form.name"
           class="form-control mb-2"
-          placeholder="Ism" />
+          placeholder="Ism"
+        />
         <input
           v-model="form.phone"
           class="form-control mb-2"
-          placeholder="Telefon (raqam)" />
+          placeholder="Telefon (raqam)"
+        />
         <input
           v-model="form.password"
           class="form-control mb-2"
-          placeholder="Parol" />
+          placeholder="Parol"
+        />
 
         <select v-model="form.role" class="form-control mb-3">
           <option value="admin">Admin</option>
@@ -78,6 +82,8 @@
 </template>
 
 <script>
+import { api, studentApi } from "@/services/axios";
+
 export default {
   data() {
     return {
@@ -95,7 +101,7 @@ export default {
   methods: {
     async getAllAdmins() {
       try {
-        const res = await this.axios.get("/api/admin/all");
+        const res = await api.get("/api/admin/all");
         this.admins = res.data.result;
       } catch (err) {
         console.log("GetAll error:", err);
@@ -104,7 +110,7 @@ export default {
 
     async register() {
       try {
-        const res = await this.axios.post("/api/admin/register", this.form);
+        const res = await api.post("/api/admin/register", this.form);
 
         if (res.data.success) {
           alert("Admin muvaffaqiyatli qo‘shildi!");
@@ -122,7 +128,7 @@ export default {
       if (!confirm("Adminni o‘chirishni tasdiqlaysizmi?")) return;
 
       try {
-        await this.axios.delete("/api/admin/delete/" + id);
+        await api.delete("/api/admin/delete/" + id);
 
         alert("Admin o‘chirildi!");
         this.getAllAdmins();
@@ -135,7 +141,7 @@ export default {
       if (!confirm("Barcha talabalar VA barcha natijalar o‘chirilsinmi?"))
         return;
 
-      this.axios
+      api
         .delete("/api/user/delete/all", {
           data: { role: localStorage.getItem("role") },
         })

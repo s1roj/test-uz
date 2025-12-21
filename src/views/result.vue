@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import { api, studentApi } from "@/services/axios";
 export default {
   data() {
     return {
@@ -62,9 +63,7 @@ export default {
     // 1. RESULT API da umumiy natijalar va attemptId ni olamiz
     async loadResult() {
       try {
-        const res = await this.axios.get(
-          "/api/result/" + this.attemptId
-        );
+        const res = await api.get("/api/result/" + this.attemptId);
 
         const result = res.data.data;
 
@@ -89,9 +88,7 @@ export default {
       if (!this.attemptId) return;
 
       try {
-        const res = await this.axios.get(
-          "/api/attempt/" + this.attemptId
-        );
+        const res = await api.get("/api/attempt/" + this.attemptId);
         this.questions = res.data.data.questions;
       } catch (err) {
         console.log("Attempt API error:", err);
