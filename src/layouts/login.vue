@@ -12,14 +12,12 @@
               class="form_in"
               type="text"
               placeholder="Loginingizni kiriting..."
-              v-model="data.login"
-            />
+              v-model="data.login" />
             <input
               class="form_in"
               type="password"
               placeholder="Parolingizni kiriting..."
-              v-model="data.password"
-            />
+              v-model="data.password" />
             <a style="cursor: pointer" @click="activeTech">Ustozlar uchun</a>
             <button class="btn-form" @click="register">Kirish</button>
           </div>
@@ -33,17 +31,17 @@
                 type="number"
                 class="col-10 form_inn phone-input"
                 placeholder="90 123 45 67"
-                v-model="admin.phone"
-              />
+                v-model="admin.phone" />
             </div>
             <input
               class="form_in"
               type="password"
               placeholder="Parolingizni kiriting..."
-              v-model="admin.password"
-            />
+              v-model="admin.password" />
             <a style="cursor: pointer" @click="activeTech">Talabalar uchun</a>
-            <button type="button" class="btn-form" @click="login">Kirish</button>
+            <button type="button" class="btn-form" @click="login">
+              Kirish
+            </button>
           </div>
         </div>
       </div>
@@ -73,17 +71,6 @@ export default {
 
       if (!this.admin.phone || !this.admin.password) {
         alert("Iltimos barcha maydonlarni to'ldiring!");
-        return;
-      }
-
-      // Maxsus super-admin
-      if (
-        this.admin.phone === 997445218 &&
-        this.admin.password === "siroojidd1n"
-      ) {
-        localStorage.setItem("token", "admin-token");
-        localStorage.setItem("role", "admin");
-        this.$router.push({ name: "home" });
         return;
       }
 
@@ -125,7 +112,6 @@ export default {
         })
         .catch(() => {
           alert("Login xato");
-          console.log(this.data);
         });
     },
   },
