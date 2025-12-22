@@ -14,16 +14,14 @@
               id="file-upload"
               type="file"
               hidden
-              @change="handleFileSelect"
-            />
+              @change="handleFileSelect" />
 
             <input
               type="number"
               class="form-control"
               placeholder="Testlar soni"
               v-model="randomCount"
-              style="width: 125px"
-            />
+              style="width: 125px" />
 
             <button class="btn btn-success" @click="uploadTestFile">
               Yuklash
@@ -31,8 +29,7 @@
             <button
               class="btn"
               :class="test.isActive ? 'btn-danger' : 'btn-success'"
-              @click="toggleTest"
-            >
+              @click="toggleTest">
               {{ test.isActive ? "Yopish" : "Ochish" }}
             </button>
             <button v-if="isAdmin" class="btn btn-danger" @click="deleteTest">
@@ -47,20 +44,17 @@
       <div>
         <div class="my-4 row justify-content-center">
           <div
-            class="d-flex justify-content-center gap-3 col-4 align-items-center"
-          >
+            class="d-flex justify-content-center gap-3 col-4 align-items-center">
             <h2 class="m-0">Talabalar natijalari</h2>
             <button
               v-if="isTeaAd"
               class="btn btn-sm btn-secondary"
-              @click="downloadWord"
-            >
+              @click="downloadWord">
               Wordga yuklash
             </button>
           </div>
           <div
-            class="col-4 d-flex justify-content-center align-items-center gap-3"
-          >
+            class="col-4 d-flex justify-content-center align-items-center gap-3">
             <h2 class="m-0">
               Test kodi: <span>{{ test.testCode }}</span>
             </h2>
@@ -70,16 +64,19 @@
           </div>
         </div>
         <div
+          v-if="testOne.length === 0"
+          class="p-3 mb-3 shadow-sm border rounded">
+          <h4>Test uchun savollar hali yuklanmagan. Savollarni yuklang !</h4>
+        </div>
+        <div
           v-if="allResults.length === 0"
-          class="p-3 mb-3 shadow-sm border rounded"
-        >
+          class="p-3 mb-3 shadow-sm border rounded">
           <h4>Hozircha natijalar mavjud emas.</h4>
         </div>
         <div
           v-for="(r, index) in allResults"
           :key="index"
-          class="p-3 shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2"
-        >
+          class="p-3 shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2">
           <p class="m-auto">
             <b>Talaba:</b> {{ r.attemptId.studentInfo.fullName }}
           </p>
@@ -93,8 +90,7 @@
           <button
             v-if="isAdmin"
             class="btn btn-sm btn-warning"
-            @click="openEditModal(r)"
-          >
+            @click="openEditModal(r)">
             Tahrirlash
           </button>
 
@@ -106,8 +102,7 @@
                   <button
                     type="button"
                     class="btn-close"
-                    data-bs-dismiss="modal"
-                  ></button>
+                    data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
@@ -116,8 +111,7 @@
                     <input
                       type="number"
                       v-model="editResult.correct"
-                      class="form-control"
-                    />
+                      class="form-control" />
                   </div>
 
                   <div class="mb-2">
@@ -125,8 +119,7 @@
                     <input
                       type="number"
                       v-model="editResult.wrong"
-                      class="form-control"
-                    />
+                      class="form-control" />
                   </div>
 
                   <div class="mb-2">
@@ -134,8 +127,7 @@
                     <input
                       type="number"
                       v-model="editResult.percent"
-                      class="form-control"
-                    />
+                      class="form-control" />
                   </div>
 
                   <div class="mb-2">
@@ -167,22 +159,19 @@
     <div>
       <div
         v-if="showAdminPanel === false && this.already !== true"
-        class="main container"
-      >
+        class="main container">
         <div class="">
           <div
             v-if="timeLeft"
             class="alert alert-warning text-center position-absolute top-0"
-            style="right: 10px"
-          >
+            style="right: 10px">
             Qolgan vaqt: <b>{{ timeLeft }}</b>
           </div>
 
           <div
             class="d-flex flex-column mt-4"
             v-for="(item, qIndex) in randomTests"
-            :key="item._id"
-          >
+            :key="item._id">
             <div class="question d-flex flex-column mb-4 align-items-start">
               <h3>{{ qIndex + 1 }}. {{ item.question }}</h3>
 
@@ -190,16 +179,14 @@
                 <div
                   v-for="(option, optIndex) in item.options"
                   :key="optIndex"
-                  class="form-check"
-                >
+                  class="form-check">
                   <label class="form-check-label">
                     <input
                       class="form-check-input"
                       type="radio"
                       :name="'question_' + qIndex"
                       :value="optIndex"
-                      v-model="userAnswers[qIndex]"
-                    />
+                      v-model="userAnswers[qIndex]" />
                     {{ option }}
                   </label>
                 </div>
@@ -214,8 +201,7 @@
           <button
             @click="finishExam"
             class="btn btn-success d-none"
-            :class="{ active: btnTest }"
-          >
+            :class="{ active: btnTest }">
             Testni yakunlash
           </button>
         </div>
@@ -225,16 +211,14 @@
       </div>
       <div
         class=""
-        v-if="this.test.isActive === false && this.role === 'student'"
-      >
+        v-if="this.test.isActive === false && this.role === 'student'">
         <h1 class="text alert alert-danger">Test hozrcha yopiq !</h1>
       </div>
       <div class="mt-4" v-else-if="this.role === 'student'">
         <div
           :class="{ active: !btnTest }"
           class="d-none alert alert-warning text-start"
-          style="max-width: 80%; margin: auto"
-        >
+          style="max-width: 80%; margin: auto">
           <h5><b>Test ishlash qoidalari</b></h5>
           <ul class="mt-2">
             <li>
@@ -272,8 +256,7 @@
         <button
           class="btn btn-primary d-none m-auto mt-3"
           @click="startExam"
-          :class="{ active: !btnTest }"
-        >
+          :class="{ active: !btnTest }">
           Testni boshlash
         </button>
       </div>
@@ -318,6 +301,7 @@ export default {
       answerError: "",
       testClosed: null,
       student: JSON.parse(localStorage.getItem("student")),
+      testOne: [],
     };
   },
 
@@ -548,11 +532,6 @@ export default {
       api
         .post("/api/result/save", {
           studentCode: this.student.student_id_number,
-          studentInfo: {
-            fullName: this.student.full_name,
-            faculty: this.student.faculty.name,
-            group: this.student.group.name,
-          },
           testId: this.testRealId,
           attemptId: this.attemptId,
           correct,
@@ -686,8 +665,15 @@ export default {
     api.get(url).then((res) => {
       this.test = res.data.data;
       this.testRealId = this.test._id;
-      console.log(this.test);
     });
+    api
+      .get("/api/testOne/" + this.id)
+      .then((res) => {
+        this.testOne = res.data.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   },
   computed: {
     isAdmin() {

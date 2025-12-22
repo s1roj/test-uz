@@ -15,15 +15,14 @@
         data-bs-target="#navbarNavAltMarkup"
         aria-controls="navbarNavAltMarkup"
         aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
+        aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav"></div>
         <div class="d-flex ms-auto align-items-center gap-3">
           <p v-if="adName" class="m-auto">{{ adName }}</p>
-          <p v-else class="m-auto">{{ student.full_name }}</p>
+          <p v-else class="m-auto">{{ student }}</p>
           <button @click="exit()" class="btn btn-danger">Chiqish</button>
         </div>
       </div>
@@ -36,21 +35,21 @@ import { api } from "@/services/axios";
 export default {
   data() {
     return {
-      student: JSON.parse(localStorage.getItem("student")),
       token: localStorage.getItem("token"),
-      role: null,
       adName: null,
+      student: null,
+      ready: false,
     };
   },
   methods: {
     exit() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
+      localStorage.clear();
       this.$router.push({ name: "login" });
     },
   },
   created() {
     const role = localStorage.getItem("role");
+
     if (role !== "student") {
       api
         .get("/api/admin/decode", {
@@ -78,7 +77,24 @@ export default {
           console.log(err);
         });
     }
+    if (role === "student") {
+      api
+        .get("/api/student/me", {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            Accept: "application/json",
+          },
+        })
+        .then((res) => {
+          const student = res.data.data.data.full_name;
+          this.student = student;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   },
+
 };
 </script>
 
