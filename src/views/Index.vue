@@ -183,7 +183,7 @@ useHead({
 
 <script>
 import testCard from "@/components/test-card.vue";
-import { api } from "@/services/axios";
+import { api, studentApi } from "@/services/axios";
 
 export default {
   components: {
@@ -283,8 +283,8 @@ export default {
           console.log(err);
         });
     } else {
-      api
-        .get("/api/student/me", {
+      studentApi
+        .get("/v1/account/me", {
           headers: {
             Authorization: `Bearer ${this.token}`,
             Accept: "application/json",
