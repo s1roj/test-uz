@@ -4,8 +4,7 @@
       to="/"
       type="button"
       class="btn-close position-absolute top-0 end-0"
-      aria-label="Close"
-    ></router-link>
+      aria-label="Close"></router-link>
     <h2 class="text-center mb-4">Admin boshqaruv paneli</h2>
     <!-- REGISTER FORM -->
     <div class="card p-4 mb-4 shadow-sm">
@@ -15,18 +14,15 @@
         <input
           v-model="form.name"
           class="form-control mb-2"
-          placeholder="Ism"
-        />
+          placeholder="Ism" />
         <input
           v-model="form.phone"
           class="form-control mb-2"
-          placeholder="Telefon (raqam)"
-        />
+          placeholder="Telefon (raqam)" />
         <input
           v-model="form.password"
           class="form-control mb-2"
-          placeholder="Parol"
-        />
+          placeholder="Parol" />
 
         <select v-model="form.role" class="form-control mb-3">
           <option value="admin">Admin</option>
@@ -38,11 +34,6 @@
           Ro‘yxatdan o‘tkazish
         </button>
       </div>
-    </div>
-    <div>
-      <button class="btn btn-danger mb-3" @click="deleteAllStudents">
-        Barcha talabalarni o‘chirish
-      </button>
     </div>
     <!-- LIST -->
     <div class="card p-4 shadow-sm">
@@ -135,24 +126,6 @@ export default {
       } catch (err) {
         console.log("Delete error:", err);
       }
-    },
-
-    deleteAllStudents() {
-      if (!confirm("Barcha talabalar VA barcha natijalar o‘chirilsinmi?"))
-        return;
-
-      api
-        .delete("/api/user/delete/all", {
-          data: { role: localStorage.getItem("role") },
-        })
-        .then((res) => {
-          alert(res.data.message);
-          window.location.reload();
-        })
-        .catch((err) => {
-          console.log(err);
-          alert("Xatolik yuz berdi!");
-        });
     },
   },
 

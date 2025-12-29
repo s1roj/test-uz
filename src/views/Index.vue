@@ -21,7 +21,13 @@
         <div class="modal" style="display: block">
           <div
             class="modal-dialog"
-            style="margin: auto; min-width: 65%; top: 25%; margin: auto">
+            style="
+              margin: auto;
+              max-width: 1080px;
+              width: 65%;
+              top: 25%;
+              margin: auto;
+            ">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">Test Qo'shish</h5>

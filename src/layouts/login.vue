@@ -1,47 +1,111 @@
 <template>
-  <div class="login">
-    <div class="">
-      <div class="login_in d-flex flex-column text-center mt-5">
-        <h1 class="title">
-          Termiz davlat muhandistlik va agrotexnologiyalar universiteti
-        </h1>
-        <div class="d-none" :class="{ active: !activeTeacher }">
-          <h2 class="text">Kirish</h2>
-          <div class="form d-flex flex-column align-items-center m-5 gap-3">
-            <input
-              class="form_in"
-              type="text"
-              placeholder="Loginingizni kiriting..."
-              v-model="data.login" />
-            <input
-              class="form_in"
-              type="password"
-              placeholder="Parolingizni kiriting..."
-              v-model="data.password" />
-            <a style="cursor: pointer" @click="activeTech">Ustozlar uchun</a>
-            <button class="btn-form" @click="register">Kirish</button>
+  <div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+      <div class="col-md-5 col-lg-4 d-none" :class="{ active: !activeTeacher }">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <div class="text-center mb-3">
+              <img
+                src="../assets/logo.png"
+                alt="Logo"
+                style="max-width: 90px" />
+            </div>
+            <h6 class="text-center fw-bold mb-1">
+              Termiz davlat muhandislik va agrotexnologiyalar universiteti
+            </h6>
+            <p class="text-center text-muted mb-4">Examin tizimi</p>
+            <div>
+              <div class="mb-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Login"
+                    v-model="data.login" />
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    placeholder="Parol"
+                    v-model="data.password" />
+                </div>
+              </div>
+              <div class="d-grid mb-2">
+                <button @click="register" class="btn btn-primary">
+                  Kirish
+                </button>
+              </div>
+              <div class="d-grid">
+                <button
+                  @click="activeTech"
+                  type="button"
+                  class="btn btn-secondary">
+                  Ustozlar uchun
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-center small text-muted">
+            <a
+              style="cursor: pointer"
+              class="text-primary"
+              href="https://student.tdmau.uz/dashboard/login"
+              target="_blank"
+              >Login yoki parolni tiklash</a
+            >
           </div>
         </div>
-        <div class="d-none" :class="{ active: activeTeacher }">
-          <h2 class="text">Ustozlar uchun</h2>
-          <div class="form d-flex flex-column align-items-center m-5 gap-3">
-            <div class="d-flex justify-content-center form_number">
-              <span class="col-2 phone-input">+998</span>
-              <input
-                type="number"
-                class="col-10 form_inn phone-input"
-                placeholder="90 123 45 67"
-                v-model="admin.phone" />
+      </div>
+      <div class="col-md-5 col-lg-4 d-none" :class="{ active: activeTeacher }">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <div class="text-center mb-3">
+              <img
+                src="../assets/logo.png"
+                alt="Logo"
+                style="max-width: 90px" />
             </div>
-            <input
-              class="form_in"
-              type="password"
-              placeholder="Parolingizni kiriting..."
-              v-model="admin.password" />
-            <a style="cursor: pointer" @click="activeTech">Talabalar uchun</a>
-            <button type="button" class="btn-form" @click="login">
-              Kirish
-            </button>
+            <h6 class="text-center fw-bold mb-1">
+              Termiz davlat muhandislik va agrotexnologiyalar universiteti
+            </h6>
+            <p class="text-center text-muted mb-4">Examin tizimi / Xodimlar</p>
+            <div>
+              <div class="mb-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Login"
+                    v-model="admin.phone" />
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    placeholder="Parol"
+                    v-model="admin.password" />
+                </div>
+              </div>
+              <div class="d-grid mb-2">
+                <button @click="login" class="btn btn-primary">Kirish</button>
+              </div>
+              <div class="d-grid">
+                <button
+                  @click="activeTech"
+                  type="button"
+                  class="btn btn-secondary">
+                  Talabalar uchun
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer text-center small text-muted">
+            Created by RTTM.
           </div>
         </div>
       </div>
@@ -75,32 +139,6 @@ export default {
     activeTech() {
       this.activeTeacher = !this.activeTeacher;
     },
-    login() {
-      console.log(this.admin);
-
-      if (!this.admin.phone || !this.admin.password) {
-        alert("Iltimos barcha maydonlarni to'ldiring!");
-        return;
-      }
-
-      // Oddiy admin login
-      api
-        .post("/api/admin/login", this.admin)
-        .then((res) => {
-          if (!res.data.success) {
-            alert(res.data.message);
-            return;
-          }
-
-          const token = res.data.token;
-          localStorage.setItem("token", token);
-          this.$router.push({ name: "home" });
-        })
-        .catch((err) => {
-          console.log("Login error:", err);
-          alert("Server xatosi!");
-        });
-    },
     register() {
       if (this.data.login == null || this.data.password == null) {
         alert("Iltimos barcha maydonlarni to'ldiring!");
@@ -119,8 +157,34 @@ export default {
 
           this.$router.push({ name: "home" });
         })
-        .catch(() => {
-          alert("Login xato");
+        .catch((error) => {
+          console.log("Login error:", error);
+          alert("Login yoki parol xato!");
+        });
+    },
+    login() {
+      console.log(this.admin);
+
+      if (!this.admin.phone || !this.admin.password) {
+        alert("Iltimos barcha maydonlarni to'ldiring!");
+        return;
+      }
+
+      api
+        .post("/api/admin/login", this.admin)
+        .then((res) => {
+          if (!res.data.success) {
+            alert(res.data.message);
+            return;
+          }
+
+          const token = res.data.token;
+          localStorage.setItem("token", token);
+          this.$router.push({ name: "home" });
+        })
+        .catch((err) => {
+          console.log("Login error:", err);
+          alert("Server xatosi!");
         });
     },
   },
@@ -185,16 +249,9 @@ export default {
   border-radius: 15px;
   outline-color: #0c8e36;
 }
-.form_inn,
-span {
-  border: none;
-  outline: none;
-  font-size: 20px;
-  line-height: 21px;
-  font-weight: 400;
-  padding: 21px;
-  border-radius: 15px;
-  background-color: #e6e6e6;
+a {
+  /* text-decoration: none; */
+  color: #6c757d !important;
 }
 .btn-form {
   margin-top: 50px;

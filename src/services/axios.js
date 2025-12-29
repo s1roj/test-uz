@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://api.tdmau.uz",
+  baseURL: "http://localhost:3100",
 });
 
 export const studentApi = axios.create({
