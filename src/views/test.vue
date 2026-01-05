@@ -531,7 +531,7 @@ export default {
           alert("Testlar muvaffaqiyatli yuklandi!");
           window.location.reload();
         })
-        .catch((err) => console.log("Upload error:", err));
+        .catch((err) => alert("Yuklashda xatolik:", err));
     },
     deleteTest() {
       if (!confirm("Test va barcha ma’lumotlar o‘chirilsinmi?")) return;

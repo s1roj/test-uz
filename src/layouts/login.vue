@@ -1,7 +1,10 @@
 <template>
   <div class="container">
     <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-md-5 col-lg-4 d-none" :class="{ active: !activeTeacher }">
+      <div
+        style="min-width: 400px"
+        class="col-md-5 col-lg-4 d-none"
+        :class="{ active: !activeTeacher }">
         <div class="card shadow-sm">
           <div class="card-body p-4">
             <div class="text-center mb-3">
@@ -59,7 +62,10 @@
           </div>
         </div>
       </div>
-      <div class="col-md-5 col-lg-4 d-none" :class="{ active: activeTeacher }">
+      <div
+        style="min-width: 400px"
+        class="col-md-5 col-lg-4 d-none"
+        :class="{ active: activeTeacher }">
         <div class="card shadow-sm">
           <div class="card-body p-4">
             <div class="text-center mb-3">

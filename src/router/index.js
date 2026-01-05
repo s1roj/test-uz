@@ -59,29 +59,16 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  const reqAut = to.meta.auth;
+  const requiresAuth = to.meta.auth === true;
   const token = localStorage.getItem("token");
 
-  if (reqAut && token) {
-    if (to.name == "login") {
-      next({ name: "home" });
-      return;
-    }
-
-    next();
-    return;
+  if (requiresAuth && !token) {
+    localStorage.clear();
+    return next({ name: "login" });
   }
 
-  if (token) {
-    if (to.name == "login") {
-      next({ name: "home" });
-      return;
-    }
-  } else {
-    if (to.name != "login") {
-      next({ name: "login" });
-      return;
-    }
+  if (to.name === "login" && token) {
+    return next({ name: "home" });
   }
 
   next();
