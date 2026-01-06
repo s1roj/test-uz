@@ -97,7 +97,7 @@
                   </blockquote>
                   <figcaption class="blockquote-footer clamp_desc">
                     <span><b>Ustoz:</b>{{ item.creator }}</span>
-                    <p><b>Gurux:</b>{{ item.desc }}</p>
+                    <p>{{ item.desc }}</p>
                   </figcaption>
                 </figure>
               </div>

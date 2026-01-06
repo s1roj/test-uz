@@ -42,9 +42,16 @@
     <h1 class="pt-4">{{ test.title }}</h1>
     <div v-if="isJunTeaAd">
       <div>
-        <div class="my-4 row justify-content-center">
-          <div
-            class="d-flex justify-content-center gap-3 col-4 align-items-center">
+        <div class="my-4 d-flex gap-5 justify-content-center">
+          <div class="d-flex justify-content-center align-items-center gap-3">
+            <h2 class="m-0">
+              Test kodi: <span>{{ test.testCode }}</span>
+            </h2>
+            <button class="btn btn-secondary btn-sm" @click="copyParamId">
+              Copy
+            </button>
+          </div>
+          <div class="d-flex justify-content-center gap-3 align-items-center">
             <h2 class="m-0">Talabalar natijalari</h2>
             <button
               v-if="isTeaAd"
@@ -53,14 +60,65 @@
               Wordga yuklash
             </button>
           </div>
-          <div
-            class="col-4 d-flex justify-content-center align-items-center gap-3">
-            <h2 class="m-0">
-              Test kodi: <span>{{ test.testCode }}</span>
-            </h2>
-            <button class="btn btn-secondary btn-sm" @click="copyParamId">
-              Copy
+          <div class="d-flex justify-content-center gap-3 align-items-center">
+            <h2 class="m-0">Yuklangan savollar</h2>
+            <button class="btn-sm btn btn-secondary" @click="getToggleFunk">
+              {{ getToggle ? "Yopish" : "Ko'rish" }}
             </button>
+          </div>
+        </div>
+        <div class="m-4">
+          <div class="d-none" :class="{ active: getToggle }">
+            <div>
+              <h2 class="mb-3">
+                Yuklangan savollar soni: {{ getTest.length }}
+              </h2>
+            </div>
+            <div v-if="getTest && getTest.length">
+              <div
+                v-for="(question, qIndex) in getTest"
+                :key="qIndex"
+                class="mb-5 p-4 border rounded shadow-sm">
+                <div class="mb-3 d-flex align-items-center">
+                  <h5 class="fw-bold">{{ qIndex + 1 }}:</h5>
+                  <h5
+                    v-for="(block, bIndex) in question.questionBlocks"
+                    :key="bIndex">
+                    <p v-if="block.type === 'text'">
+                      {{ block.value }}
+                    </p>
+
+                    <img
+                      v-else-if="block.type === 'image'"
+                      :src="block.value"
+                      class="img-fluid my-2 rounded"
+                      style="max-height: 300px" />
+                  </h5>
+                </div>
+                <div>
+                  <div
+                    v-for="(option, optIndex) in question.options"
+                    :key="optIndex"
+                    class="form-check px-2 border rounded shadow-sm d-flex align-items-center">
+                    <div>
+                      <template
+                        v-for="(block, bIndex) in option.blocks"
+                        :key="bIndex">
+                        <span v-if="block.type === 'text'">
+                          {{ block.value }}
+                        </span>
+
+                        <img
+                          v-else-if="block.type === 'image'"
+                          :src="block.value"
+                          style="max-width: 100px"
+                          class="img-fluid d-block rounded" />
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div
@@ -75,6 +133,7 @@
         </div>
         <div
           v-for="(r, index) in allResults"
+          :class="{ 'd-none': getToggle }"
           :key="index"
           class="shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2">
           <table class="table">
@@ -90,7 +149,7 @@
                 <th scope="col">Yakunlagan</th>
                 <th v-if="admin.phone === 997445218" scope="col">Raqami</th>
                 <th v-if="admin.phone === 997445218" scope="col">Rasmi</th>
-                <th scope="col">Amallar</th>
+                <th v-if="admin.role === 'admin'" scope="col">Amallar</th>
               </tr>
             </thead>
             <tbody>
@@ -206,12 +265,12 @@
               v-for="(question, qIndex) in questions"
               :key="qIndex"
               class="mb-5 p-4 border rounded shadow-sm">
-              <!-- SAVOL -->
               <div class="mb-3 d-flex align-items-center">
                 <h5 class="fw-bold">{{ qIndex + 1 }}:</h5>
-                <h5
+                <div
                   v-for="(block, bIndex) in question.questionBlocks"
-                  :key="bIndex">
+                  :key="bIndex"
+                  class="mb-1">
                   <p v-if="block.type === 'text'">
                     {{ block.value }}
                   </p>
@@ -221,7 +280,7 @@
                     :src="block.value"
                     class="img-fluid my-2 rounded"
                     style="max-height: 300px" />
-                </h5>
+                </div>
               </div>
               <div>
                 <div
@@ -238,18 +297,20 @@
                   <label
                     class="form-check-label ms-2 w-100 text-start"
                     :for="'q_' + qIndex + '_' + optIndex">
-                    <template
-                      v-for="(block, bIndex) in option.blocks"
-                      :key="bIndex">
-                      <span v-if="block.type === 'text'">
-                        {{ block.value }}
-                      </span>
+                    <template v-if="Array.isArray(option.blocks)">
+                      <template
+                        v-for="(block, bIndex) in option.blocks"
+                        :key="bIndex">
+                        <span v-if="block.type === 'text'">
+                          {{ block.value }}
+                        </span>
 
-                      <img
-                        v-else-if="block.type === 'image'"
-                        :src="block.value"
-                        style="max-width: 100px"
-                        class="img-fluid d-block rounded" />
+                        <img
+                          v-else-if="block.type === 'image'"
+                          :src="block.value"
+                          style="max-width: 100px"
+                          class="img-fluid d-block rounded my-1" />
+                      </template>
                     </template>
                   </label>
                 </div>
@@ -363,6 +424,9 @@ export default {
       student: JSON.parse(localStorage.getItem("student")),
       questions: [],
       answers: null,
+      getTest: [],
+      getAnswers: [],
+      getToggle: false,
     };
   },
 
@@ -714,6 +778,22 @@ export default {
           console.error("Result delete error:", err);
         });
     },
+    getTestQuestions() {
+      api
+        .get("/api/testOne/" + this.id)
+        .then((res) => {
+          this.getTest = res.data.data || [];
+          this.answers = this.getTest.map(() => null);
+
+          console.log(this.getTest);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    getToggleFunk() {
+      this.getToggle = !this.getToggle;
+    },
   },
 
   created() {
@@ -763,6 +843,7 @@ export default {
       this.test = res.data.data;
       this.testRealId = this.test._id;
     });
+    this.getTestQuestions();
   },
   computed: {
     isAdmin() {
