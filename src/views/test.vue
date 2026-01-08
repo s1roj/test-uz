@@ -14,14 +14,16 @@
               id="file-upload"
               type="file"
               hidden
-              @change="handleFileSelect" />
+              @change="handleFileSelect"
+            />
 
             <input
               type="number"
               class="form-control"
               placeholder="Testlar soni"
               v-model="randomCount"
-              style="width: 125px" />
+              style="width: 125px"
+            />
 
             <button class="btn btn-success" @click="uploadTestFile">
               Yuklash
@@ -29,7 +31,8 @@
             <button
               class="btn"
               :class="test.isActive ? 'btn-danger' : 'btn-success'"
-              @click="toggleTest">
+              @click="toggleTest"
+            >
               {{ test.isActive ? "Yopish" : "Ochish" }}
             </button>
             <button v-if="isAdmin" class="btn btn-danger" @click="deleteTest">
@@ -40,8 +43,10 @@
       </div>
     </div>
     <h1 class="pt-4">{{ test.title }}</h1>
+    <!-- TODO FOR ADMINS -->
     <div v-if="isJunTeaAd">
       <div>
+        <!-- ? HEADER -->
         <div class="my-4 d-flex gap-5 justify-content-center">
           <div class="d-flex justify-content-center align-items-center gap-3">
             <h2 class="m-0">
@@ -56,7 +61,8 @@
             <button
               v-if="isTeaAd"
               class="btn btn-sm btn-secondary"
-              @click="downloadWord">
+              @click="downloadWord"
+            >
               Wordga yuklash
             </button>
           </div>
@@ -67,6 +73,7 @@
             </button>
           </div>
         </div>
+        <!-- ? BODY TESTS-->
         <div class="m-4">
           <div class="d-none" :class="{ active: getToggle }">
             <div>
@@ -74,68 +81,73 @@
                 Yuklangan savollar soni: {{ getTest.length }}
               </h2>
             </div>
-            <div v-if="getTest && getTest.length">
+            <div
+              v-for="(q, qIndex) in getTest"
+              :key="q._id || qIndex"
+              class="question-card mb-4 p-3 border rounded shadow-sm bg-white"
+            >
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="q-num">{{ qIndex + 1 }}.</div>
+
+                <div class="q-body flex-grow-1 text-start">
+                  <RenderBlocks
+                    :blocks="q.questionBlocks"
+                    :baseUrl="BASE_URL"
+                    context="question"
+                  />
+                </div>
+              </div>
+
               <div
-                v-for="(question, qIndex) in getTest"
-                :key="qIndex"
-                class="mb-5 p-4 border rounded shadow-sm">
-                <div class="mb-3 d-flex align-items-center">
-                  <h5 class="fw-bold">{{ qIndex + 1 }}:</h5>
-                  <h5
-                    v-for="(block, bIndex) in question.questionBlocks"
-                    :key="bIndex">
-                    <p v-if="block.type === 'text'">
-                      {{ block.value }}
-                    </p>
+                v-for="(opt, optIndex) in q.options || []"
+                :key="optIndex"
+                class="option-card form-check mt-2 rounded shadow-sm"
+                :class="{ selected: getAnswers?.[qIndex] === optIndex }"
+              >
+                <label
+                  class="form-check-label d-flex align-items-center gap-2 w-100 m-0"
+                  :for="'q_' + qIndex + '_' + optIndex"
+                >
+                  <input
+                    class="form-check-input mt-1"
+                    type="radio"
+                    :name="'q_' + qIndex"
+                    :id="'q_' + qIndex + '_' + optIndex"
+                    :value="optIndex"
+                    v-model="getAnswers[qIndex]"
+                  />
 
-                    <img
-                      v-else-if="block.type === 'image'"
-                      :src="block.value"
-                      class="img-fluid my-2 rounded"
-                      style="max-height: 300px" />
-                  </h5>
-                </div>
-                <div>
-                  <div
-                    v-for="(option, optIndex) in question.options"
-                    :key="optIndex"
-                    class="form-check px-2 border rounded shadow-sm d-flex align-items-center">
-                    <div>
-                      <template
-                        v-for="(block, bIndex) in option.blocks"
-                        :key="bIndex">
-                        <span v-if="block.type === 'text'">
-                          {{ block.value }}
-                        </span>
-
-                        <img
-                          v-else-if="block.type === 'image'"
-                          :src="block.value"
-                          style="max-width: 100px"
-                          class="img-fluid d-block rounded" />
-                      </template>
-                    </div>
+                  <div class="opt-body flex-grow-1 text-start">
+                    <RenderBlocks
+                      :blocks="opt?.blocks"
+                      :baseUrl="BASE_URL"
+                      context="option"
+                    />
                   </div>
-                </div>
+                </label>
               </div>
             </div>
           </div>
         </div>
         <div
           v-if="testOne.length === 0"
-          class="p-3 mb-3 shadow-sm border rounded">
+          class="p-3 mb-3 shadow-sm border rounded"
+        >
           <h4>Test uchun savollar hali yuklanmagan. Savollarni yuklang !</h4>
         </div>
         <div
           v-if="allResults.length === 0"
-          class="p-3 mb-3 shadow-sm border rounded">
+          class="p-3 mb-3 shadow-sm border rounded"
+        >
           <h4>Hozircha natijalar mavjud emas.</h4>
         </div>
+        <!-- ? BODY RESULTS -->
         <div
           v-for="(r, index) in allResults"
           :class="{ 'd-none': getToggle }"
           :key="index"
-          class="shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2">
+          class="shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2"
+        >
           <table class="table">
             <thead>
               <tr>
@@ -170,19 +182,22 @@
                     :src="r.attemptId.studentInfo.studentImage"
                     alt="Talaba rasmi"
                     class="img-fluid d-block rounded"
-                    style="max-width: 50px; max-height: 50px" />
+                    style="max-width: 50px; max-height: 50px"
+                  />
                 </td>
                 <td>
                   <button
                     v-if="isAdmin"
                     class="btn btn-sm btn-warning me-2"
-                    @click="openEditModal(r)">
+                    @click="openEditModal(r)"
+                  >
                     Tahrirlash
                   </button>
                   <button
                     v-if="isAdmin"
                     class="btn btn-sm btn-warning"
-                    @click="resetAttempt(r)">
+                    @click="resetAttempt(r)"
+                  >
                     Qayta imkon
                   </button>
                 </td>
@@ -197,7 +212,8 @@
                   <button
                     type="button"
                     class="btn-close"
-                    data-bs-dismiss="modal"></button>
+                    data-bs-dismiss="modal"
+                  ></button>
                 </div>
                 <div class="modal-body">
                   <div class="mb-2">
@@ -205,7 +221,8 @@
                     <input
                       type="number"
                       v-model="editResult.correct"
-                      class="form-control" />
+                      class="form-control"
+                    />
                   </div>
 
                   <div class="mb-2">
@@ -213,7 +230,8 @@
                     <input
                       type="number"
                       v-model="editResult.wrong"
-                      class="form-control" />
+                      class="form-control"
+                    />
                   </div>
 
                   <div class="mb-2">
@@ -221,7 +239,8 @@
                     <input
                       type="number"
                       v-model="editResult.percent"
-                      class="form-control" />
+                      class="form-control"
+                    />
                   </div>
 
                   <div class="mb-2">
@@ -249,74 +268,66 @@
         </div>
       </div>
     </div>
+    <!-- TODO FOR STUDENTS -->
     <div>
       <div
         v-if="showAdminPanel === false && this.already !== true"
-        class="main container">
+        class="main container"
+      >
         <div class="">
           <div
             v-if="timeLeft"
             class="alert alert-warning text-center position-absolute top-0"
-            style="right: 10px">
+            style="right: 10px"
+          >
             Qolgan vaqt: <b>{{ timeLeft }}</b>
           </div>
-          <div v-if="questions && questions.length">
-            <div
-              v-for="(question, qIndex) in questions"
-              :key="qIndex"
-              class="mb-5 p-4 border rounded shadow-sm">
-              <div class="mb-3 d-flex align-items-center">
-                <h5 class="fw-bold">{{ qIndex + 1 }}:</h5>
-                <div
-                  v-for="(block, bIndex) in question.questionBlocks"
-                  :key="bIndex"
-                  class="mb-1">
-                  <p v-if="block.type === 'text'">
-                    {{ block.value }}
-                  </p>
+           <div
+              v-for="(q, qIndex) in questions"
+              :key="q._id || qIndex"
+              class="question-card mb-4 p-3 border rounded shadow-sm bg-white"
+            >
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="q-num">{{ qIndex + 1 }}.</div>
 
-                  <img
-                    v-else-if="block.type === 'image'"
-                    :src="block.value"
-                    class="img-fluid my-2 rounded"
-                    style="max-height: 300px" />
+                <div class="q-body flex-grow-1 text-start">
+                  <RenderBlocks
+                    :blocks="q.questionBlocks"
+                    :baseUrl="BASE_URL"
+                    context="question"
+                  />
                 </div>
               </div>
-              <div>
-                <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check px-2 border rounded shadow-sm d-flex align-items-center">
+
+              <div
+                v-for="(opt, optIndex) in q.options || []"
+                :key="optIndex"
+                class="option-card form-check mt-2 rounded shadow-sm"
+                :class="{ selected: answers?.[qIndex] === optIndex }"
+              >
+                <label
+                  class="form-check-label d-flex align-items-center gap-2 w-100 m-0"
+                  :for="'q_' + qIndex + '_' + optIndex"
+                >
                   <input
-                    class="form-check-input m-1"
+                    class="form-check-input mt-1"
                     type="radio"
+                    :name="'q_' + qIndex"
                     :id="'q_' + qIndex + '_' + optIndex"
                     :value="optIndex"
-                    v-model="answers[qIndex]" />
+                    v-model="answers[qIndex]"
+                  />
 
-                  <label
-                    class="form-check-label ms-2 w-100 text-start"
-                    :for="'q_' + qIndex + '_' + optIndex">
-                    <template v-if="Array.isArray(option.blocks)">
-                      <template
-                        v-for="(block, bIndex) in option.blocks"
-                        :key="bIndex">
-                        <span v-if="block.type === 'text'">
-                          {{ block.value }}
-                        </span>
-
-                        <img
-                          v-else-if="block.type === 'image'"
-                          :src="block.value"
-                          style="max-width: 100px"
-                          class="img-fluid d-block rounded my-1" />
-                      </template>
-                    </template>
-                  </label>
-                </div>
+                  <div class="opt-body flex-grow-1 text-start">
+                    <RenderBlocks
+                      :blocks="opt?.blocks"
+                      :baseUrl="BASE_URL"
+                      context="option"
+                    />
+                  </div>
+                </label>
               </div>
             </div>
-          </div>
         </div>
         <p v-if="answerError" class="text-danger fw-bold text-center mt-2">
           {{ answerError }}
@@ -325,7 +336,8 @@
           <button
             @click="finishExam"
             class="btn btn-success d-none"
-            :class="{ active: btnTest }">
+            :class="{ active: btnTest }"
+          >
             Testni yakunlash
           </button>
         </div>
@@ -335,14 +347,16 @@
       </div>
       <div
         class=""
-        v-if="this.test.isActive === false && this.role === 'student'">
+        v-if="this.test.isActive === false && this.role === 'student'"
+      >
         <h1 class="text alert alert-danger">Test hozrcha yopiq !</h1>
       </div>
       <div class="mt-4" v-else-if="this.role === 'student'">
         <div
           :class="{ active: !btnTest }"
           class="d-none alert alert-warning text-start"
-          style="max-width: 80%; margin: auto">
+          style="max-width: 80%; margin: auto"
+        >
           <h5><b>Test ishlash qoidalari</b></h5>
           <ul class="mt-2">
             <li>
@@ -380,7 +394,8 @@
         <button
           class="btn btn-primary d-none m-auto mt-3"
           @click="startExam"
-          :class="{ active: !btnTest }">
+          :class="{ active: !btnTest }"
+        >
           Testni boshlash
         </button>
       </div>
@@ -390,9 +405,12 @@
 
 <script>
 import { api } from "@/services/axios";
+import RenderBlocks from "@/components/RenderBlocks.vue";
 export default {
+  components: { RenderBlocks },
   data() {
     return {
+      BASE_URL: "http://localhost:3100",
       editResult: {
         _id: "",
         correct: null,
@@ -784,8 +802,6 @@ export default {
         .then((res) => {
           this.getTest = res.data.data || [];
           this.answers = this.getTest.map(() => null);
-
-          console.log(this.getTest);
         })
         .catch((err) => {
           console.log(err);
@@ -793,6 +809,10 @@ export default {
     },
     getToggleFunk() {
       this.getToggle = !this.getToggle;
+    },
+    setQuestionsFromApi(apiQuestions) {
+      this.getTest = Array.isArray(apiQuestions) ? apiQuestions : [];
+      this.getAnswers = this.questions.map(() => null);
     },
   },
 

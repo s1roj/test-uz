@@ -29,20 +29,14 @@
             >
           </span>
 
-          <!-- SAVOL TEXT + RASM -->
           <span>
             {{ qIndex + 1 }}.
-            <span v-for="(b, i) in q.questionBlocks" :key="i">
-              <template v-if="b.type === 'text'">
-                {{ b.value }}
-              </template>
-              <template v-else-if="b.type === 'image'">
-                <img
-                  :src="b.value"
-                  class="img-fluid d-block my-2"
-                  style="max-width: 150px" />
-              </template>
-            </span>
+            <RenderBlocks
+              :blocks="q.questionBlocks"
+              :baseUrl="BASE_URL"
+              context="question"
+              mode="inline"
+              imgClass="img-fluid d-block my-2" />
           </span>
         </h4>
         <div
@@ -52,17 +46,13 @@
           :class="getOptionClass(qIndex, optIndex)">
           <strong>{{ optIndex + 1 }}.</strong>
 
-          <span v-for="(b, bi) in opt.blocks" :key="bi">
-            <template v-if="b.type === 'text'">
-              {{ b.value }}
-            </template>
-            <template v-else-if="b.type === 'image'">
-              <img
-                :src="b.value"
-                class="img-fluid d-block my-2"
-                style="max-width: 100px" />
-            </template>
-          </span>
+          <RenderBlocks
+            :blocks="opt.blocks"
+            :baseUrl="BASE_URL"
+            context="option"
+            mode="inline"
+            imgClass="img-fluid d-block my-2"
+            imgStyle="height: 25px;" />
         </div>
       </div>
     </div>
@@ -77,7 +67,12 @@
 
 <script>
 import { api, studentApi } from "@/services/axios";
+import RenderBlocks from "@/components/RenderBlocks.vue";
+
 export default {
+  components: {
+    RenderBlocks,
+  },
   data() {
     return {
       questions: [],
@@ -88,6 +83,7 @@ export default {
       percent: 0,
       grade: 0,
       attemptId: this.$route.params.id,
+      BASE_URL: process.env.VUE_APP_BASE_URL || "http://localhost:3100",
     };
   },
 
