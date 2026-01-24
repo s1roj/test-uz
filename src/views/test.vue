@@ -145,44 +145,110 @@
                 <th scope="col">Yakunlagan</th>
                 <th v-if="admin.phone === 997445218" scope="col">Raqami</th>
                 <th v-if="admin.phone === 997445218" scope="col">Rasmi</th>
+                <th v-if="admin.role === 'admin'" scope="col">
+                  Test natijalari
+                </th>
                 <th v-if="admin.role === 'admin'" scope="col">Amallar</th>
               </tr>
             </thead>
-            <tbody v-for="(r, index) in allResults" :key="index">
-              <tr class="" v-if="r.attemptId.studentInfo">
-                <th class="text-start ps-5">{{ r.attemptId.studentInfo.fullName }}</th>
-                <td>{{ r.attemptId.studentInfo.faculty }}</td>
-                <td>{{ r.attemptId.studentInfo.group }}</td>
-                <td>{{ r.correct }}</td>
-                <th>{{ r.wrong }}</th>
-                <td>{{ r.percent }}%</td>
-                <td>{{ r.grade }}</td>
-                <td>{{ formatDate(r.createdAt) }}</td>
-                <th v-if="admin.phone === 997445218">
-                  {{ r.attemptId.studentInfo.studentNumber }}
-                </th>
-                <td v-if="admin.phone === 997445218">
-                  <img
-                    :src="r.attemptId.studentInfo.studentImage"
-                    alt="Talaba rasmi"
-                    class="img-fluid d-block rounded"
-                    style="max-width: 50px; max-height: 50px" />
-                </td>
-                <td>
-                  <button
-                    v-if="isAdmin"
-                    class="btn btn-sm btn-warning me-2"
-                    @click="openEditModal(r)">
-                    Tahrirlash
-                  </button>
-                  <button
-                    v-if="isAdmin"
-                    class="btn btn-sm btn-warning"
-                    @click="resetAttempt(r)">
-                    Qayta imkon
-                  </button>
-                </td>
-              </tr>
+            <tbody>
+              <template v-for="(r, index) in allResults" :key="r._id || index">
+                <!-- Student row -->
+                <tr v-if="r.attemptId && r.attemptId.studentInfo">
+                  <th class="text-start ps-5">
+                    {{ r.attemptId.studentInfo.fullName }}
+                  </th>
+                  <td>{{ r.attemptId.studentInfo.faculty }}</td>
+                  <td>{{ r.attemptId.studentInfo.group }}</td>
+                  <td>{{ r.correct }}</td>
+                  <td>{{ r.wrong }}</td>
+                  <td>{{ r.percent }}%</td>
+                  <td>{{ r.grade }}</td>
+                  <td>{{ formatDate(r.createdAt) }}</td>
+
+                  <td v-if="admin.phone === 997445218">
+                    {{ r.attemptId.studentInfo.studentNumber }}
+                  </td>
+
+                  <td v-if="admin.phone === 997445218">
+                    <img
+                      :src="r.attemptId.studentInfo.studentImage"
+                      class="img-fluid d-block rounded"
+                      style="max-width: 50px; max-height: 50px" />
+                  </td>
+
+                  <td v-if="admin.role === 'admin'">
+                    <button
+                      v-if="isAdmin"
+                      class="btn btn-sm btn-warning"
+                      @click="loadResult(r.attemptId._id)">
+                      Natijalar
+                    </button>
+                  </td>
+
+                  <td v-if="admin.role === 'admin'">
+                    <button
+                      v-if="isAdmin"
+                      class="btn btn-sm btn-warning me-2"
+                      @click="openEditModal(r)">
+                      Tahrirlash
+                    </button>
+
+                    <button
+                      v-if="isAdmin"
+                      class="btn btn-sm btn-warning"
+                      @click="resetAttempt(r)">
+                      Qayta imkon
+                    </button>
+                  </td>
+                </tr>
+
+                <tr v-if="openedAttemptId === r.attemptId?._id">
+                  <td :colspan="admin.phone === 997445218 ? 12 : 10">
+                    <div class="mt-3">
+                      <div v-if="resultTestQuestions.length">
+                        <div
+                          v-for="(q, qIndex) in resultTestQuestions"
+                          :key="q._id || qIndex"
+                          class="p-3 mb-3 shadow-sm bg-white rounded">
+                          <div class="d-flex gap-2 align-items-center justify-content-center mb-2">
+                            <span v-if="resultTest.answers[qIndex] == null"
+                              >❗</span
+                            >
+                            <b>{{ qIndex + 1 }}.</b>
+
+                            <RenderBlocks
+                              :blocks="q.questionBlocks"
+                              :baseUrl="BASE_URL"
+                              context="question"
+                              mode="inline"
+                              imgClass="img-fluid d-inline my-2"
+                              imgStyle="height: 40px;" />
+                          </div>
+
+                          <div
+                            v-for="(opt, optIndex) in q.options"
+                            :key="optIndex"
+                            class="px-2 py-1 rounded mb-2 shadow-sm"
+                            :class="getOptionClass(qIndex, optIndex)">
+                            <RenderBlocks
+                              :blocks="opt.blocks"
+                              :baseUrl="BASE_URL"
+                              context="option"
+                              mode="inline"
+                              imgClass="img-fluid d-inline my-2"
+                              imgStyle="height: 30px;" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div v-else class="alert alert-info">
+                        Savollar topilmadi (attempt o‘chgan bo‘lishi mumkin).
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
           <div class="modal fade" id="editResultModal" tabindex="-1">
@@ -414,6 +480,17 @@ export default {
       getTest: [],
       getAnswers: [],
       getToggle: false,
+      openedAttemptId: null,
+      resultTest: {
+        answers: [],
+        correctCount: 0,
+        wrongCount: 0,
+        total: 0,
+        percent: 0,
+        grade: 0,
+        attemptId: null,
+      },
+      resultTestQuestions: [],
     };
   },
 
@@ -422,7 +499,7 @@ export default {
       this.editResult = { ...result };
 
       const modal = new bootstrap.Modal(
-        document.getElementById("editResultModal")
+        document.getElementById("editResultModal"),
       );
       modal.show();
     },
@@ -444,7 +521,7 @@ export default {
 
         // modal yopish
         bootstrap.Modal.getInstance(
-          document.getElementById("editResultModal")
+          document.getElementById("editResultModal"),
         ).hide();
 
         window.location.reload();
@@ -471,7 +548,7 @@ export default {
     async loadAllResults() {
       try {
         const res = await api.get(
-          "/api/test/" + this.$route.params.id + "/results"
+          "/api/test/" + this.$route.params.id + "/results",
         );
 
         if (!res.data || !res.data.data) {
@@ -724,7 +801,7 @@ export default {
 
       window.open(
         `https://api.tdmau.uz/api/test/${testId}/results/word`,
-        "_blank"
+        "_blank",
       );
     },
     formatDate(dateString) {
@@ -782,6 +859,68 @@ export default {
     setQuestionsFromApi(apiQuestions) {
       this.getTest = Array.isArray(apiQuestions) ? apiQuestions : [];
       this.getAnswers = this.questions.map(() => null);
+    },
+    async loadResult(attemptId) {
+      try {
+        // toggle (yana bossangiz yopiladi)
+        if (this.openedAttemptId === attemptId) {
+          this.openedAttemptId = null;
+          this.resultTestQuestions = [];
+          this.resultTest = {
+            answers: [],
+            correctCount: 0,
+            wrongCount: 0,
+            total: 0,
+            percent: 0,
+            grade: 0,
+            attemptId: null,
+          };
+          return;
+        }
+
+        this.openedAttemptId = attemptId;
+
+        const res = await api.get("/api/result/" + attemptId);
+        const result = res.data?.data;
+
+        this.resultTest.answers = Array.isArray(result?.answers)
+          ? result.answers
+          : [];
+        this.resultTest.correctCount = result?.correct ?? 0;
+        this.resultTest.wrongCount = result?.wrong ?? 0;
+        this.resultTest.total = result?.total ?? 0;
+        this.resultTest.percent = result?.percent ?? 0;
+        this.resultTest.grade = result?.grade ?? 0;
+        this.resultTest.attemptId = result?.attemptId ?? null;
+
+        await this.loadAttempt(attemptId);
+      } catch (err) {
+        console.log("Result API error:", err, attemptId);
+      }
+    },
+
+    async loadAttempt(attemptId) {
+      try {
+        const res = await api.get("/api/attempt/" + attemptId);
+        this.resultTestQuestions = res?.data?.data?.questions || [];
+      } catch (err) {
+        console.log("Attempt API error:", err);
+        this.resultTestQuestions = [];
+      }
+    },
+
+    getOptionClass(qIndex, optIndex) {
+      const userAns = this.resultTest?.answers?.[qIndex];
+      const correct = this.resultTestQuestions?.[qIndex]?.correctIndex;
+
+      if (userAns === undefined || userAns === null) return "";
+      if (optIndex === userAns && optIndex === correct)
+        return "bg-success text-white";
+      if (optIndex === userAns && optIndex !== correct)
+        return "bg-danger text-white";
+      if (optIndex === correct) return "bg-success-subtle";
+
+      return "";
     },
   },
 

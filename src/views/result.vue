@@ -98,7 +98,6 @@ export default {
         document.exitFullscreen().catch(() => {});
       }
     },
-    // 1. RESULT API da umumiy natijalar va attemptId ni olamiz
     async loadResult() {
       try {
         const res = await api.get("/api/result/" + this.attemptId);
@@ -106,7 +105,6 @@ export default {
         const result = res.data.data;
         console.log(result);
 
-        // Result ichidan keladigan ma’lumotlar
         this.answers = result.answers;
         this.correctCount = result.correct;
         this.wrongCount = result.wrong;
@@ -115,14 +113,12 @@ export default {
         this.grade = result.grade;
         this.attemptId = result.attemptId;
 
-        // Endi questions ni olishga o'tamiz
         this.loadAttempt();
       } catch (err) {
         console.log("Result API error:", err);
       }
     },
 
-    // 2. ATTEMPT API orqali savollarni olish
     async loadAttempt() {
       if (!this.attemptId) return;
 
@@ -139,13 +135,9 @@ export default {
       const userAnswer = this.answers?.[qIndex];
 
       if (userAnswer === undefined || userAnswer === null) return "";
-
-      // foydalanuvchi tanlagan
       if (optIndex === userAnswer) {
         return optIndex === q.correctIndex ? "correct" : "wrong";
       }
-
-      // to‘g‘ri javobni yashil qilib ko‘rsatamiz
       if (optIndex === q.correctIndex) {
         return "correct";
       }
