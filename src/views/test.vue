@@ -211,7 +211,8 @@
                           v-for="(q, qIndex) in resultTestQuestions"
                           :key="q._id || qIndex"
                           class="p-3 mb-3 shadow-sm bg-white rounded">
-                          <div class="d-flex gap-2 align-items-center justify-content-center mb-2">
+                          <div
+                            class="d-flex gap-2 align-items-center justify-content-center mb-2">
                             <span v-if="resultTest.answers[qIndex] == null"
                               >❗</span
                             >
@@ -319,8 +320,7 @@
         <div class="">
           <div
             v-if="timeLeft"
-            class="alert alert-warning text-center position-absolute top-0"
-            style="right: 10px">
+            class="alert alert-warning text-center timer-fixed">
             Qolgan vaqt: <b>{{ timeLeft }}</b>
           </div>
           <div
@@ -600,15 +600,13 @@ export default {
           if (res.data.reason === "closed") {
             this.testClosed = true;
           }
-          // 1) Agar testni oldin tugatgan bo‘lsa:
           if (res.data.already === true) {
             this.$router.push("/result/" + res.data.attemptId);
             alert("Siz bu testni allaqachon yakunlagansiz!");
-
+            localStorage.removeItem("exam_started");
+            window.dispatchEvent(new Event("examStartedChanged"));
             return;
           }
-
-          // 2) Savollar kelmagan bo‘lsa
           if (!res.data.questions || !res.data.questions.length) {
             console.error("Savollar kelmadi!");
             return;
@@ -619,14 +617,12 @@ export default {
           this.finishTime = new Date(res.data.finishTime);
 
           this.answers = new Array(this.questions.length).fill(null);
-
-          // 3) Faqat talaba boshlaganda kuzatuvlarni yoq
           if (this.role === "student") {
             this.enableSecurityEvents();
           }
-
-          // 4) Taymer
           this.startCountdown();
+          localStorage.setItem("exam_started", "1");
+          window.dispatchEvent(new Event("examStartedChanged"));
         })
         .catch((err) => {
           console.log("Start attempt error:", err);
@@ -673,12 +669,9 @@ export default {
         .catch((err) => console.log(err));
     },
     finishExam(force = false) {
-      // answers har doim massiv bo‘lsin
       if (!Array.isArray(this.answers)) {
         this.answers = [];
       }
-
-      // faqat manual tugatishda tekshiramiz
       if (force !== "auto") {
         const notAnswered = this.answers.findIndex((a) => a === null);
         if (notAnswered !== -1) {
@@ -696,8 +689,6 @@ export default {
         clearInterval(this.timerId);
         this.timerId = null;
       }
-
-      // ❗ ASOSIY MANBA — questions
       if (!Array.isArray(this.questions) || this.questions.length === 0) {
         console.error("Test savollari yuklanmagan");
         this.isSaving = false;
@@ -735,7 +726,8 @@ export default {
         })
         .then((res) => {
           this.$router.push("/result/" + res.data.data.attemptId);
-          // console.log(res.data.data);
+          localStorage.removeItem("exam_started");
+          window.dispatchEvent(new Event("examStartedChanged"));
         })
         .catch((err) => {
           console.error("Natijani saqlashda xato:", err);
@@ -746,10 +738,7 @@ export default {
     },
     autoFinishExam(reason) {
       if (this.testFinished || this.isSaving) return;
-
       alert("Test yakunlandi!\nSabab: " + reason);
-
-      // majburan auto finish
       this.finishExam("auto");
     },
     enterFullScreen() {
@@ -843,6 +832,7 @@ export default {
         });
     },
     getTestQuestions() {
+      if (this.role === "student") return;
       api
         .get("/api/testOne/" + this.id)
         .then((res) => {
@@ -908,7 +898,6 @@ export default {
         this.resultTestQuestions = [];
       }
     },
-
     getOptionClass(qIndex, optIndex) {
       const userAns = this.resultTest?.answers?.[qIndex];
       const correct = this.resultTestQuestions?.[qIndex]?.correctIndex;
@@ -923,7 +912,11 @@ export default {
       return "";
     },
   },
-
+  beforeRouteLeave(to, from, next) {
+    localStorage.removeItem("exam_started");
+    window.dispatchEvent(new Event("examStartedChanged"));
+    next();
+  },
   created() {
     const role = localStorage.getItem("role");
     if (role !== "student") {
@@ -1016,5 +1009,14 @@ h4 {
 p {
   display: flex;
   align-items: center;
+}
+.timer-fixed {
+  position: fixed;
+  top: 20px;
+  right: 10px;
+  z-index: 9999;
+  width: max-content;
+  max-width: 90vw;
+  margin: 0;
 }
 </style>

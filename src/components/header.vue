@@ -23,7 +23,9 @@
         <div class="d-flex ms-auto align-items-center gap-3">
           <p v-if="adName" class="m-auto">{{ adName }}</p>
           <p v-else class="m-auto">{{ student }}</p>
-          <button @click="exit()" class="btn btn-danger">Chiqish</button>
+          <button v-if="showExitBtn" @click="exit()" class="btn btn-danger">
+            Chiqish
+          </button>
         </div>
       </div>
     </div>
@@ -36,6 +38,7 @@ export default {
   data() {
     return {
       token: localStorage.getItem("token"),
+      examStarted: localStorage.getItem("exam_started") === "1",
       adName: null,
       student: null,
       ready: false,
@@ -46,10 +49,14 @@ export default {
       localStorage.clear();
       this.$router.push({ name: "login" });
     },
+    syncExamStarted() {
+      this.examStarted = localStorage.getItem("exam_started") === "1";
+    },
   },
   created() {
     const role = localStorage.getItem("role");
-
+    window.addEventListener("examStartedChanged", this.syncExamStarted);
+    window.addEventListener("storage", this.syncExamStarted);
     if (role !== "student") {
       api
         .get("/api/admin/decode", {
@@ -94,7 +101,17 @@ export default {
         });
     }
   },
-
+  beforeUnmount() {
+    window.removeEventListener("examStartedChanged", this.syncExamStarted);
+    window.removeEventListener("storage", this.syncExamStarted);
+  },
+  computed: {
+    showExitBtn() {
+      const hideByRoute = this.$route.meta.hideExitWhenStarted === true;
+      if (hideByRoute && this.examStarted) return false;
+      return true;
+    },
+  },
 };
 </script>
 

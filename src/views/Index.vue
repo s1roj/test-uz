@@ -86,7 +86,7 @@
             <div class="card" style="height: 155px">
               <div class="card-body row align-items-center">
                 <figure>
-                  <blockquote class="blockquote">
+                  <blockquote class="blockquote clamp_desc">
                     <p style="font-weight: bold">
                       {{ item.title }}
                     </p>

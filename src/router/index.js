@@ -21,7 +21,7 @@ const routes = [
         path: "/test/:id",
         name: "test",
         component: Test,
-        meta: { auth: true },
+        meta: { auth: true, hideExitWhenStarted: true },
       },
       {
         path: "/result/:id",

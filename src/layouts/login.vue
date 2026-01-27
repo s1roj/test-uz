@@ -27,15 +27,21 @@
                     v-model="data.login" />
                 </div>
               </div>
-              <div class="mb-3">
-                <div class="input-group">
-                  <input
-                    type="password"
-                    class="form-control"
-                    placeholder="Parol"
-                    v-model="data.password" />
-                </div>
-              </div>
+              <form @submit.prevent="doRegister" class="mb-3 position-relative">
+                <input
+                  :type="showPass ? 'text' : 'password'"
+                  class="form-control pe-5"
+                  placeholder="Parol"
+                  v-model="data.password" />
+
+                <button
+                  type="button"
+                  class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0"
+                  @click="showPass = !showPass"
+                  style="text-decoration: none">
+                  {{ showPass ? "🙈" : "👁️" }}
+                </button>
+              </form>
               <div class="d-grid mb-2">
                 <button @click="register" class="btn btn-primary">
                   Kirish
@@ -88,15 +94,22 @@
                     v-model="admin.phone" />
                 </div>
               </div>
-              <div class="mb-3">
-                <div class="input-group">
-                  <input
-                    type="password"
-                    class="form-control"
-                    placeholder="Parol"
-                    v-model="admin.password" />
-                </div>
-              </div>
+              <form @submit.prevent="doLogin" class="mb-3 position-relative">
+                <input
+                  :type="showPass ? 'text' : 'password'"
+                  class="form-control pe-5"
+                  placeholder="Parol"
+                  v-model="admin.password" />
+
+                <button
+                  type="button"
+                  class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0"
+                  @click="showPass = !showPass"
+                  style="text-decoration: none">
+                  {{ showPass ? "🙈" : "👁️" }}
+                </button>
+              </form>
+
               <div class="d-grid mb-2">
                 <button @click="login" class="btn btn-primary">Kirish</button>
               </div>
@@ -120,6 +133,8 @@
 </template>
 <script setup>
 import { useHead } from "@vueuse/head";
+import { ref } from "vue";
+const showPass = ref(false);
 
 useHead({
   title: "Kirish – Examin TDMAU",
@@ -129,7 +144,6 @@ useHead({
 
 <script>
 import { api, studentApi } from "@/services/axios";
-
 export default {
   data() {
     return {
@@ -192,6 +206,12 @@ export default {
           console.log("Login error:", err);
           alert("Server xatosi!");
         });
+    },
+    doLogin() {
+      this.login();
+    },
+    doRegister() {
+      this.register();
     },
   },
 };
