@@ -74,7 +74,7 @@
 
 <script>
 import { api, studentApi } from "@/services/axios";
-
+import { uiAlert, uiConfirm } from "@/utils/uiDialog";
 export default {
   data() {
     return {
@@ -104,11 +104,11 @@ export default {
         const res = await api.post("/api/admin/register", this.form);
 
         if (res.data.success) {
-          alert("Admin muvaffaqiyatli qo‘shildi!");
+          await uiAlert("Admin muvaffaqiyatli qo‘shildi!");
           this.getAllAdmins();
           window.location.reload();
         } else {
-          alert(res.data.message);
+          await uiAlert(res.data.message);
         }
       } catch (err) {
         console.log("Register error:", err);
@@ -116,12 +116,12 @@ export default {
     },
 
     async deleteAdmin(id) {
-      if (!confirm("Adminni o‘chirishni tasdiqlaysizmi?")) return;
-
+      const ok = await uiConfirm("Adminni o‘chirishni tasdiqlaysizmi?");
+      if (!ok) return;
       try {
         await api.delete("/api/admin/delete/" + id);
 
-        alert("Admin o‘chirildi!");
+        await uiAlert("Admin o‘chirildi!");
         this.getAllAdmins();
       } catch (err) {
         console.log("Delete error:", err);

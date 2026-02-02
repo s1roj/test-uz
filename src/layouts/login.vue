@@ -144,6 +144,7 @@ useHead({
 
 <script>
 import { api, studentApi } from "@/services/axios";
+import { uiAlert, uiConfirm } from "@/utils/uiDialog";
 export default {
   data() {
     return {
@@ -159,9 +160,9 @@ export default {
     activeTech() {
       this.activeTeacher = !this.activeTeacher;
     },
-    register() {
+    async register() {
       if (this.data.login == null || this.data.password == null) {
-        alert("Iltimos barcha maydonlarni to'ldiring!");
+        await uiAlert("Iltimos barcha maydonlarni to'ldiring!");
         return;
       }
       api
@@ -177,24 +178,24 @@ export default {
 
           this.$router.push({ name: "home" });
         })
-        .catch((error) => {
+        .catch(async (error) => {
           console.log("Login error:", error);
-          alert("Login yoki parol xato!");
+          await uiAlert("Login yoki parol xato!");
         });
     },
-    login() {
+    async login() {
       console.log(this.admin);
 
       if (!this.admin.phone || !this.admin.password) {
-        alert("Iltimos barcha maydonlarni to'ldiring!");
+        await uiAlert("Login yoki parol kiritilmagan");
         return;
       }
 
       api
         .post("/api/admin/login", this.admin)
-        .then((res) => {
+        .then(async (res) => {
           if (!res.data.success) {
-            alert(res.data.message);
+            await uiAlert(res.data.message);
             return;
           }
 
@@ -202,9 +203,10 @@ export default {
           localStorage.setItem("token", token);
           this.$router.push({ name: "home" });
         })
-        .catch((err) => {
+        .catch(async (err) => {
           console.log("Login error:", err);
-          alert("Server xatosi!");
+          await uiAlert("Login yoki parol xato.");
+          return;
         });
     },
     doLogin() {

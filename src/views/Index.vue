@@ -2,6 +2,12 @@
   <div class="home">
     <div v-if="isJunTeaAd">
       <div v-if="isTeaAd" class="d-flex justify-content-end mx-4 mt-3 gap-3">
+        <input
+          v-model="search"
+          type="text"
+          class="form-control"
+          placeholder="Title yoki izoh bo‘yicha qidirish..."
+          style="max-width: 360px" />
         <button
           class="btn btn-success d-none"
           :class="{ active: btnSuccess }"
@@ -79,7 +85,7 @@
         </div>
       </div>
       <div class="d-flex flex-wrap gap-3 p-3 justify-content-center">
-        <div style="width: 300px" v-for="item of reversedTests" :key="item._id">
+        <div style="width: 300px" v-for="item of filteredTests" :key="item._id">
           <router-link
             class="text-decoration-none text-dark"
             :to="`/test/${item._id}`">
@@ -92,7 +98,7 @@
                     </p>
                   </blockquote>
                   <figcaption class="blockquote-footer clamp_desc">
-                    <span><b>Ustoz:</b>{{ item.creator }}</span>
+                    <span>{{ item.creator }}</span>
                     <p>{{ item.desc }}</p>
                   </figcaption>
                 </figure>
@@ -100,6 +106,11 @@
             </div>
           </router-link>
         </div>
+      </div>
+      <div
+        v-if="search && filteredTests.length === 0"
+        class="text-center text-muted mt-3">
+        Hech narsa topilmadi.
       </div>
       <button
         v-show="showTopBtn"
@@ -190,6 +201,7 @@ export default {
       token: localStorage.getItem("token"),
       student: localStorage.getItem("role"),
       showTopBtn: false,
+      search: "",
     };
   },
   methods: {
@@ -321,7 +333,6 @@ export default {
   beforeUnmount() {
     window.removeEventListener("scroll", this.onScroll);
   },
-
   beforeRouteLeave(to, from, next) {
     if (sessionStorage.getItem(FORCE_TOP_KEY) === "1") {
       return next();
@@ -330,10 +341,20 @@ export default {
     sessionStorage.setItem(KEY, String(window.scrollY || 0));
     next();
   },
-
   computed: {
-    reversedTests() {
-      return [...this.getTest].reverse();
+    filteredTests() {
+      const q = (this.search || "").trim().toLowerCase();
+      const arr = [...this.getTest];
+
+      if (!q) return arr.reverse();
+
+      return arr
+        .filter((t) => {
+          const title = (t.title || "").toLowerCase();
+          const desc = (t.desc || "").toLowerCase();
+          return title.includes(q) || desc.includes(q);
+        })
+        .reverse();
     },
     isAdmin() {
       return this.getRole === "admin";

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import DefaultPage from "../layouts/default.vue";
 import Login from "../layouts/login.vue";
 import NotFound from "../layouts/404.vue";
@@ -54,7 +54,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(), // <-- MUHIM!
   routes,
 
   scrollBehavior(to, from, savedPosition) {

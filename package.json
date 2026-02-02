@@ -2,13 +2,19 @@
   "name": "test-uz",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "dev": "electron .",
+    "start:kiosk": "electron .",
+    "dist": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@vueuse/head": "^2.0.0",
     "axios": "^1.13.2",
+    "bootstrap": "^5.3.8",
     "katex": "^0.16.27",
     "vue": "^3.2.13",
     "vue-axios": "^3.5.2",
@@ -18,7 +24,34 @@
   "devDependencies": {
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-plugin-vuex": "~5.0.0",
-    "@vue/cli-service": "~5.0.0"
+    "@vue/cli-service": "~5.0.0",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0"
+  },
+  "build": {
+    "appId": "uz.tdmau.examin",
+    "productName": "Examin",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "browserslist": [
     "> 1%",

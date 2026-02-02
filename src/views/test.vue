@@ -80,7 +80,7 @@
             <div
               v-for="(q, qIndex) in getTest"
               :key="q._id || qIndex"
-              class="question-card mb-4 p-3 border rounded shadow-sm bg-white">
+              class="question-card mb-4 p-3 border rounded shadow-sm bg-white position-relative">
               <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="q-num">{{ qIndex + 1 }}.</div>
 
@@ -93,6 +93,18 @@
                     imgStyle="height: 40px;" />
                 </div>
               </div>
+              <button
+                class="position-absolute btn btn-sm btn-warning"
+                style="top: 10px; right: 100px"
+                @click="openQuestionEditModal(q)">
+                Tahrirlash
+              </button>
+              <button
+                class="position-absolute btn btn-sm btn-danger"
+                style="top: 10px; right: 10px"
+                @click="deleteQuestion(q._id)">
+                O‘chirish
+              </button>
 
               <div
                 v-for="(opt, optIndex) in q.options || []"
@@ -120,6 +132,59 @@
                   </div>
                 </label>
               </div>
+              <!-- todo MODEL EDIT TEST -->
+              <div class="modal fade" id="editQuestionModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Savolni tahrirlash</h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body" v-if="editingQuestion">
+                      <div class="mb-3">
+                        <label class="form-label">Correct index</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          v-model.number="editingQuestion.correctIndex" />
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label"
+                          >Savol (questionBlocks JSON)</label
+                        >
+                        <textarea
+                          class="form-control"
+                          rows="6"
+                          v-model="editingQuestion._questionBlocksJson">
+                        </textarea>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label">Options (options JSON)</label>
+                        <textarea
+                          class="form-control"
+                          rows="8"
+                          v-model="editingQuestion._optionsJson">
+                        </textarea>
+                      </div>
+                    </div>
+
+                    <div class="modal-footer">
+                      <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        Bekor
+                      </button>
+                      <button class="btn btn-success" @click="saveQuestionEdit">
+                        Saqlash
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -132,126 +197,137 @@
         <div
           :class="{ 'd-none': getToggle }"
           class="shadow-sm border rounded d-flex gap-3 justify-content-center align-items-center mb-2">
-          <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Talaba</th>
-                <th scope="col">Fakultet</th>
-                <th scope="col">Guruh</th>
-                <th scope="col">To‘g‘ri</th>
-                <th scope="col">Noto‘g‘ri</th>
-                <th scope="col">Foiz</th>
-                <th scope="col">Baho</th>
-                <th scope="col">Yakunlagan</th>
-                <th v-if="admin.phone === 997445218" scope="col">Raqami</th>
-                <th v-if="admin.phone === 997445218" scope="col">Rasmi</th>
-                <th v-if="admin.role === 'admin'" scope="col">
-                  Test natijalari
-                </th>
-                <th v-if="admin.role === 'admin'" scope="col">Amallar</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="(r, index) in allResults" :key="r._id || index">
-                <!-- Student row -->
-                <tr v-if="r.attemptId && r.attemptId.studentInfo">
-                  <th class="text-start ps-5">
-                    {{ r.attemptId.studentInfo.fullName }}
-                  </th>
-                  <td>{{ r.attemptId.studentInfo.faculty }}</td>
-                  <td>{{ r.attemptId.studentInfo.group }}</td>
-                  <td>{{ r.correct }}</td>
-                  <td>{{ r.wrong }}</td>
-                  <td>{{ r.percent }}%</td>
-                  <td>{{ r.grade }}</td>
-                  <td>{{ formatDate(r.createdAt) }}</td>
-
-                  <td v-if="admin.phone === 997445218">
-                    {{ r.attemptId.studentInfo.studentNumber }}
-                  </td>
-
-                  <td v-if="admin.phone === 997445218">
-                    <img
-                      :src="r.attemptId.studentInfo.studentImage"
-                      class="img-fluid d-block rounded"
-                      style="max-width: 50px; max-height: 50px" />
-                  </td>
-
-                  <td v-if="admin.role === 'admin'">
-                    <button
-                      v-if="isAdmin"
-                      class="btn btn-sm btn-warning"
-                      @click="loadResult(r.attemptId._id)">
-                      Natijalar
-                    </button>
-                  </td>
-
-                  <td v-if="admin.role === 'admin'">
-                    <button
-                      v-if="isAdmin"
-                      class="btn btn-sm btn-warning me-2"
-                      @click="openEditModal(r)">
-                      Tahrirlash
-                    </button>
-
-                    <button
-                      v-if="isAdmin"
-                      class="btn btn-sm btn-warning"
-                      @click="resetAttempt(r)">
-                      Qayta imkon
-                    </button>
-                  </td>
+          <div class="table-x table-wrap">
+            <table class="table table-sticky w-100">
+              <thead>
+                <tr>
+                  <th>Talaba</th>
+                  <th>Fakultet</th>
+                  <th>Guruh</th>
+                  <th>To‘g‘ri</th>
+                  <th>Noto‘g‘ri</th>
+                  <th>Foiz</th>
+                  <th>Baho</th>
+                  <th>Yakunlagan</th>
+                  <th v-if="admin.phone === 997445218">Raqami</th>
+                  <th v-if="admin.phone === 997445218">Rasmi</th>
+                  <th v-if="admin.role === 'admin'">Test natijalari</th>
+                  <th v-if="admin.role === 'admin'">Amallar</th>
                 </tr>
+              </thead>
 
-                <tr v-if="openedAttemptId === r.attemptId?._id">
-                  <td :colspan="admin.phone === 997445218 ? 12 : 10">
-                    <div class="mt-3">
-                      <div v-if="resultTestQuestions.length">
+              <tbody>
+                <template
+                  v-for="(r, index) in allResults"
+                  :key="r._id || index">
+                  <tr
+                    v-if="r.attemptId && r.attemptId.studentInfo"
+                    class="student-row"
+                    :id="`row_${r.attemptId._id}`"
+                    :class="{
+                      'is-open': openedAttemptId === r.attemptId?._id,
+                    }">
+                    <th class="text-start ps-5">
+                      {{ r.attemptId.studentInfo.fullName }}
+                    </th>
+                    <td>{{ r.attemptId.studentInfo.faculty }}</td>
+                    <td>{{ r.attemptId.studentInfo.group }}</td>
+                    <td>{{ r.correct }}</td>
+                    <td>{{ r.wrong }}</td>
+                    <td>{{ r.percent }}%</td>
+                    <td>{{ r.grade }}</td>
+                    <td>{{ formatDate(r.createdAt) }}</td>
+
+                    <td v-if="admin.phone === 997445218">
+                      {{ r.attemptId.studentInfo.studentNumber }}
+                    </td>
+
+                    <td v-if="admin.phone === 997445218">
+                      <img
+                        :src="r.attemptId.studentInfo.studentImage"
+                        class="img-fluid d-block rounded"
+                        style="max-width: 40px; max-height: 40px" />
+                    </td>
+
+                    <td v-if="admin.role === 'admin'">
+                      <button
+                        v-if="isJunTeaAd"
+                        class="btn btn-sm btn-warning"
+                        @click="loadResult(r.attemptId._id)">
+                        Natijalar
+                      </button>
+                    </td>
+
+                    <td v-if="admin.role === 'admin'">
+                      <button
+                        v-if="isAdmin"
+                        class="btn btn-sm btn-warning me-2"
+                        @click="openEditModal(r)">
+                        Tahrirlash
+                      </button>
+                      <button
+                        v-if="isAdmin"
+                        class="btn btn-sm btn-warning"
+                        @click="resetAttempt(r)">
+                        Qayta imkon
+                      </button>
+                    </td>
+                  </tr>
+                  <tr
+                    v-if="openedAttemptId === r.attemptId?._id"
+                    class="detail-row">
+                    <td :colspan="admin.phone === 997445218 ? 12 : 10">
+                      <div class="mt-3">
                         <div
-                          v-for="(q, qIndex) in resultTestQuestions"
-                          :key="q._id || qIndex"
-                          class="p-3 mb-3 shadow-sm bg-white rounded">
+                          v-if="resultTestQuestions.length"
+                          class="detail-scroll">
                           <div
-                            class="d-flex gap-2 align-items-center justify-content-center mb-2">
-                            <span v-if="resultTest.answers[qIndex] == null"
-                              >❗</span
-                            >
-                            <b>{{ qIndex + 1 }}.</b>
+                            v-for="(q, qIndex) in resultTestQuestions"
+                            :key="q._id || qIndex"
+                            class="p-3 mb-3 shadow-sm bg-white rounded">
+                            <div
+                              class="d-flex gap-2 align-items-center mb-2 justify-content-center">
+                              <span v-if="resultTest.answers[qIndex] == null"
+                                >❗</span
+                              >
+                              <b>{{ qIndex + 1 }}.</b>
 
-                            <RenderBlocks
-                              :blocks="q.questionBlocks"
-                              :baseUrl="BASE_URL"
-                              context="question"
-                              mode="inline"
-                              imgClass="img-fluid d-inline my-2"
-                              imgStyle="height: 40px;" />
-                          </div>
+                              <RenderBlocks
+                                :blocks="q.questionBlocks"
+                                :baseUrl="BASE_URL"
+                                context="question"
+                                mode="inline"
+                                imgClass="img-fluid d-inline my-2"
+                                imgStyle="height: 40px;" />
+                            </div>
 
-                          <div
-                            v-for="(opt, optIndex) in q.options"
-                            :key="optIndex"
-                            class="px-2 py-1 rounded mb-2 shadow-sm"
-                            :class="getOptionClass(qIndex, optIndex)">
-                            <RenderBlocks
-                              :blocks="opt.blocks"
-                              :baseUrl="BASE_URL"
-                              context="option"
-                              mode="inline"
-                              imgClass="img-fluid d-inline my-2"
-                              imgStyle="height: 30px;" />
+                            <div
+                              v-for="(opt, optIndex) in q.options"
+                              :key="optIndex"
+                              class="px-2 py-1 rounded mb-2 shadow-sm"
+                              :class="getOptionClass(qIndex, optIndex)">
+                              <RenderBlocks
+                                :blocks="opt.blocks"
+                                :baseUrl="BASE_URL"
+                                context="option"
+                                mode="inline"
+                                imgClass="img-fluid d-inline my-2"
+                                imgStyle="height: 30px;" />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div v-else class="alert alert-info">
-                        Savollar topilmadi (attempt o‘chgan bo‘lishi mumkin).
+                        <div v-else class="alert alert-info">
+                          Savollar topilmadi (attempt o‘chgan bo‘lishi mumkin).
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
           <div class="modal fade" id="editResultModal" tabindex="-1">
             <div class="modal-dialog">
               <div class="modal-content">
@@ -441,6 +517,9 @@
 <script>
 import { api } from "@/services/axios";
 import RenderBlocks from "@/components/RenderBlocks.vue";
+import { uiAlert, uiConfirm } from "@/utils/uiDialog";
+import * as bootstrap from "bootstrap";
+
 export default {
   components: { RenderBlocks },
   data() {
@@ -491,10 +570,90 @@ export default {
         attemptId: null,
       },
       resultTestQuestions: [],
+      timeUpHandled: false,
+      editingQuestion: null,
+      editingCorrectIndex: null,
+      editingOptionsText: [],
     };
   },
 
   methods: {
+    openQuestionEditModal(q) {
+      const copy = JSON.parse(JSON.stringify(q));
+      copy._questionBlocksJson = JSON.stringify(
+        copy.questionBlocks || [],
+        null,
+        2,
+      );
+
+      copy._optionsJson = JSON.stringify(copy.options || [], null, 2);
+
+      this.editingQuestion = copy;
+
+      const modal = new bootstrap.Modal(
+        document.getElementById("editQuestionModal"),
+      );
+      modal.show();
+    },
+    async saveQuestionEdit() {
+      try {
+        if (!this.editingQuestion?._id) return;
+
+        let questionBlocks = [];
+        let options = [];
+
+        try {
+          questionBlocks = JSON.parse(
+            this.editingQuestion._questionBlocksJson || "[]",
+          );
+        } catch (e) {
+          await uiAlert("Savol JSON xato (questionBlocks). To‘g‘rilang!");
+          return;
+        }
+
+        try {
+          options = JSON.parse(this.editingQuestion._optionsJson || "[]");
+        } catch (e) {
+          await uiAlert("Options JSON xato. To‘g‘rilang!");
+          return;
+        }
+
+        const payload = {
+          questionBlocks,
+          options,
+          correctIndex: Number(this.editingQuestion.correctIndex),
+        };
+
+        await api.put(
+          `/api/testOne/update/${this.editingQuestion._id}`,
+          payload,
+        );
+
+        await uiAlert("Savol yangilandi!");
+
+        bootstrap.Modal.getInstance(
+          document.getElementById("editQuestionModal"),
+        ).hide();
+
+        this.getTestQuestions();
+      } catch (err) {
+        console.error(err);
+        await uiAlert("Saqlashda xatolik!");
+      }
+    },
+    async deleteQuestion(questionId) {
+      const ok = await uiConfirm("Savol o‘chirilsinmi?");
+      if (!ok) return;
+
+      try {
+        await api.delete(`/api/testOne/delete/${questionId}`);
+        await uiAlert("Savol o‘chirildi!");
+        this.getTest = this.getTest.filter((q) => q._id !== questionId);
+      } catch (err) {
+        console.log("Delete question error:", err);
+        await uiAlert("Savolni o‘chirishda xatolik!");
+      }
+    },
     openEditModal(result) {
       this.editResult = { ...result };
 
@@ -517,7 +676,7 @@ export default {
           grade: this.editResult.grade,
         });
 
-        alert("Natija yangilandi");
+        await uiAlert("Natija yangilandi");
 
         // modal yopish
         bootstrap.Modal.getInstance(
@@ -527,7 +686,7 @@ export default {
         window.location.reload();
       } catch (err) {
         console.error(err);
-        alert("Xatolik yuz berdi");
+        await uiAlert("Xatolik yuz berdi");
       }
     },
     copyParamId() {
@@ -560,28 +719,7 @@ export default {
         console.log("Natijalarni olishda xatolik:", error);
       }
     },
-    enableSecurityEvents() {
-      this.enterFullScreen();
-      this.watchFullScreen();
-
-      // sahifadan chiqish
-      document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-          this.autoFinishExam("Sahifani tark etish yoki boshqa tabga o'tish.");
-        }
-      });
-
-      // Alt+Tab yoki minimize
-      window.addEventListener("blur", () => {
-        this.autoFinishExam("Brauzer fokusini tark etish.");
-      });
-
-      // sahifa yangilanishi yoki yopilishi
-      window.addEventListener("beforeunload", (e) => {
-        this.autoFinishExam("Sahifani yangilash yoki yopish.");
-      });
-    },
-    startExam() {
+    async startExam() {
       this.btnTest = true;
       let studentCode = this.student.student_id_number;
       api
@@ -596,13 +734,13 @@ export default {
             studentImage: this.student.image,
           },
         })
-        .then((res) => {
+        .then(async (res) => {
           if (res.data.reason === "closed") {
             this.testClosed = true;
           }
           if (res.data.already === true) {
             this.$router.push("/result/" + res.data.attemptId);
-            alert("Siz bu testni allaqachon yakunlagansiz!");
+            await uiAlert("Siz bu testni allaqachon yakunlagansiz!");
             localStorage.removeItem("exam_started");
             window.dispatchEvent(new Event("examStartedChanged"));
             return;
@@ -617,8 +755,13 @@ export default {
           this.finishTime = new Date(res.data.finishTime);
 
           this.answers = new Array(this.questions.length).fill(null);
+          if (this.role === "student" && window.examApp?.enterExamMode) {
+            await window.examApp.enterExamMode();
+          }
           if (this.role === "student") {
-            this.enableSecurityEvents();
+            console.log("examApp exists?", !!window.examApp);
+            const ok = await window.examApp?.enterExamMode?.();
+            console.log("enterExamMode result:", ok);
           }
           this.startCountdown();
           localStorage.setItem("exam_started", "1");
@@ -632,14 +775,14 @@ export default {
       this.selectedFile = event.target.files[0];
       console.log("Tanlangan fayl:", this.selectedFile);
     },
-    uploadTestFile() {
+    async uploadTestFile() {
       if (!this.selectedFile) {
-        alert("Iltimos test faylini yuklang");
+        await uiAlert("Iltimos test faylini yuklang");
         return;
       }
 
       if (!this.randomCount) {
-        alert("Random testlar sonini kiriting");
+        await uiAlert("Random testlar sonini kiriting");
         return;
       }
 
@@ -650,20 +793,20 @@ export default {
 
       api
         .post("/api/testOne/upload", fd)
-        .then((res) => {
+        .then(async (res) => {
           console.log(res.data);
-          alert("Testlar muvaffaqiyatli yuklandi!");
+          await uiAlert("Testlar muvaffaqiyatli yuklandi!");
           window.location.reload();
         })
-        .catch((err) => alert("Yuklashda xatolik:", err));
+        .catch(async (err) => await uiAlert("Yuklashda xatolik:", err));
     },
-    deleteTest() {
-      if (!confirm("Test va barcha ma’lumotlar o‘chirilsinmi?")) return;
-
+    async deleteTest() {
+      const ok = await uiConfirm("Test va barcha ma’lumotlar o‘chirilsinmi?");
+      if (!ok) return;
       api
         .delete("/api/test/delete/" + this.id)
-        .then(() => {
-          alert("Test va barcha ma’lumotlar o‘chirildi!");
+        .then(async () => {
+          await uiAlert("Test va barcha ma’lumotlar o‘chirildi!");
           this.$router.push("/");
         })
         .catch((err) => console.log(err));
@@ -672,6 +815,7 @@ export default {
       if (!Array.isArray(this.answers)) {
         this.answers = [];
       }
+
       if (force !== "auto") {
         const notAnswered = this.answers.findIndex((a) => a === null);
         if (notAnswered !== -1) {
@@ -689,6 +833,7 @@ export default {
         clearInterval(this.timerId);
         this.timerId = null;
       }
+
       if (!Array.isArray(this.questions) || this.questions.length === 0) {
         console.error("Test savollari yuklanmagan");
         this.isSaving = false;
@@ -696,11 +841,8 @@ export default {
       }
 
       let correct = 0;
-
       this.questions.forEach((q, index) => {
-        if (this.answers[index] === q.correctIndex) {
-          correct++;
-        }
+        if (this.answers[index] === q.correctIndex) correct++;
       });
 
       const total = this.questions.length;
@@ -724,43 +866,31 @@ export default {
           grade,
           answers: this.answers,
         })
-        .then((res) => {
+        .then(async (res) => {
+          if (this.role === "student" && window.examApp?.exitExamMode) {
+            try {
+              await window.examApp.exitExamMode();
+            } catch (e) {}
+          }
+
           this.$router.push("/result/" + res.data.data.attemptId);
+
           localStorage.removeItem("exam_started");
           window.dispatchEvent(new Event("examStartedChanged"));
         })
-        .catch((err) => {
-          console.error("Natijani saqlashda xato:", err);
+        .catch(async (err) => {
+          await uiAlert(
+            "Internet yo‘q yoki serverga ulanib bo‘lmadi. Internetni tuzatib, yana 'Yakunlash' ni bosing.",
+          );
+          this.testFinished = false;
         })
         .finally(() => {
           this.isSaving = false;
         });
     },
-    autoFinishExam(reason) {
-      if (this.testFinished || this.isSaving) return;
-      alert("Test yakunlandi!\nSabab: " + reason);
-      this.finishExam("auto");
-    },
-    enterFullScreen() {
-      if (this.role !== "student") return;
-
-      const doc = document.documentElement;
-
-      if (doc.requestFullscreen) doc.requestFullscreen();
-      else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-      else if (doc.mozRequestFullScreen) doc.mozRequestFullScreen();
-      else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
-    },
-    watchFullScreen() {
-      if (this.role !== "student") return;
-
-      document.addEventListener("fullscreenchange", () => {
-        if (!document.fullscreenElement) {
-          this.autoFinishExam("Full screen rejimidan chiqildi.");
-        }
-      });
-    },
     startCountdown() {
+      this.timeUpHandled = false;
+
       this.timerId = setInterval(() => {
         if (this.testFinished) {
           clearInterval(this.timerId);
@@ -774,14 +904,17 @@ export default {
         if (diff <= 0) {
           clearInterval(this.timerId);
           this.timerId = null;
-          alert("Vaqt tugadi! Test avtomatik yakunlanadi.");
-          this.autoFinishExam("Vaqt tugadi.");
+
+          if (this.timeUpHandled) return;
+          this.timeUpHandled = true;
+
+          this.timeLeft = "0m : 0s";
+          this.finishExam("auto");
           return;
         }
 
         let m = Math.floor(diff / 60000);
         let s = Math.floor((diff % 60000) / 1000);
-
         this.timeLeft = `${m}m : ${s}s`;
       }, 1000);
     },
@@ -805,10 +938,11 @@ export default {
         second: "2-digit",
       });
     },
-    resetAttempt(result) {
-      if (!confirm("Talabaga testni qayta topshirish imkoni berilsinmi?"))
-        return;
-
+    async resetAttempt(result) {
+      const ok = await uiConfirm(
+        "Talabaga testni qayta topshirish imkoni berilsinmi?",
+      );
+      if (!ok) return;
       const resultId = result._id;
       const attemptId = result.attemptId._id;
 
@@ -823,8 +957,8 @@ export default {
         });
       api
         .delete(`/api/result/delete/${resultId}`)
-        .then((res) => {
-          alert("Talabaga testni qayta topshirish imkoni berildi.");
+        .then(async (res) => {
+          await uiAlert("Talabaga testni qayta topshirish imkoni berildi.");
           window.location.reload();
         })
         .catch((err) => {
@@ -852,43 +986,34 @@ export default {
     },
     async loadResult(attemptId) {
       try {
-        // toggle (yana bossangiz yopiladi)
-        if (this.openedAttemptId === attemptId) {
-          this.openedAttemptId = null;
-          this.resultTestQuestions = [];
-          this.resultTest = {
-            answers: [],
-            correctCount: 0,
-            wrongCount: 0,
-            total: 0,
-            percent: 0,
-            grade: 0,
-            attemptId: null,
-          };
-          return;
-        }
-
-        this.openedAttemptId = attemptId;
+        // toggle: bosilgan bo'lsa yopilsin
+        this.openedAttemptId =
+          this.openedAttemptId === attemptId ? null : attemptId;
+        if (!this.openedAttemptId) return;
 
         const res = await api.get("/api/result/" + attemptId);
-        const result = res.data?.data;
+        const result = res.data.data;
 
-        this.resultTest.answers = Array.isArray(result?.answers)
-          ? result.answers
-          : [];
-        this.resultTest.correctCount = result?.correct ?? 0;
-        this.resultTest.wrongCount = result?.wrong ?? 0;
-        this.resultTest.total = result?.total ?? 0;
-        this.resultTest.percent = result?.percent ?? 0;
-        this.resultTest.grade = result?.grade ?? 0;
-        this.resultTest.attemptId = result?.attemptId ?? null;
+        this.resultTest.answers = result.answers || [];
+        this.resultTest.correctCount = result.correct;
+        this.resultTest.wrongCount = result.wrong;
+        this.resultTest.total = result.total;
+        this.resultTest.percent = result.percent;
+        this.resultTest.grade = result.grade;
 
-        await this.loadAttempt(attemptId);
+        // attempt savollarini olish
+        const a = await api.get("/api/attempt/" + attemptId);
+        this.resultTestQuestions = a.data.data.questions || [];
+
+        // ochilgan row yuqoriga kelib header tagida qolmasin
+        this.$nextTick(() => {
+          const el = document.getElementById(`row_${attemptId}`);
+          el?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
       } catch (err) {
-        console.log("Result API error:", err, attemptId);
+        console.log("Result API error:", err);
       }
     },
-
     async loadAttempt(attemptId) {
       try {
         const res = await api.get("/api/attempt/" + attemptId);
@@ -911,11 +1036,27 @@ export default {
 
       return "";
     },
+    disableContextMenu(e) {
+      e.preventDefault();
+      return false;
+    },
+  },
+  mounted() {
+    document.addEventListener("contextmenu", this.disableContextMenu);
   },
   beforeRouteLeave(to, from, next) {
+    if (this.role === "student" && window.examApp?.exitExamMode) {
+      window.examApp.exitExamMode();
+    }
     localStorage.removeItem("exam_started");
     window.dispatchEvent(new Event("examStartedChanged"));
     next();
+  },
+  beforeUnmount() {
+    document.removeEventListener("contextmenu", this.disableContextMenu);
+    if (this.role === "student" && window.examApp?.exitExamMode) {
+      window.examApp.exitExamMode();
+    }
   },
   created() {
     const role = localStorage.getItem("role");
@@ -1018,5 +1159,58 @@ p {
   width: max-content;
   max-width: 90vw;
   margin: 0;
+}
+.table-wrap {
+  max-height: 70vh;
+  position: relative;
+}
+.table-x {
+  width: 100%;
+  overflow-x: auto;
+}
+.table-sticky {
+  min-width: 1200px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fff;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.table-sticky tr.student-row.is-open > th,
+.table-sticky tr.student-row.is-open > td {
+  position: sticky;
+  top: 42px;
+  z-index: 40;
+  background: #fff;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.student-row {
+  scroll-margin-top: 60px;
+}
+
+.detail-scroll {
+  max-height: 55vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+@media (max-width: 1200px) {
+  .table-sticky tr.student-row.is-open > th,
+  .table-sticky tr.student-row.is-open > td {
+    top: 48px;
+  }
+}
+.active {
+  display: block !important;
 }
 </style>
