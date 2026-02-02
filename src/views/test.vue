@@ -55,10 +55,7 @@
           </div>
           <div class="d-flex justify-content-center gap-3 align-items-center">
             <h2 class="m-0">Talabalar natijalari</h2>
-            <button
-              v-if="isTeaAd"
-              class="btn btn-sm btn-secondary"
-              @click="downloadWord">
+            <button class="btn btn-sm btn-secondary" @click="downloadWord">
               Wordga yuklash
             </button>
           </div>
@@ -211,8 +208,8 @@
                   <th>Yakunlagan</th>
                   <th v-if="admin.phone === 997445218">Raqami</th>
                   <th v-if="admin.phone === 997445218">Rasmi</th>
-                  <th v-if="admin.role === 'admin'">Test natijalari</th>
-                  <th v-if="admin.role === 'admin'">Amallar</th>
+                  <th v-if="isAdmin">Test natijalari</th>
+                  <th v-if="isJunTeaAd">Amallar</th>
                 </tr>
               </thead>
 
@@ -249,24 +246,21 @@
                         style="max-width: 40px; max-height: 40px" />
                     </td>
 
-                    <td v-if="admin.role === 'admin'">
+                    <td v-if="isJunTeaAd">
                       <button
-                        v-if="isJunTeaAd"
                         class="btn btn-sm btn-warning"
                         @click="loadResult(r.attemptId._id)">
                         Natijalar
                       </button>
                     </td>
 
-                    <td v-if="admin.role === 'admin'">
+                    <td v-if="isAdmin">
                       <button
-                        v-if="isAdmin"
                         class="btn btn-sm btn-warning me-2"
                         @click="openEditModal(r)">
                         Tahrirlash
                       </button>
                       <button
-                        v-if="isAdmin"
                         class="btn btn-sm btn-warning"
                         @click="resetAttempt(r)">
                         Qayta imkon
